@@ -1,13 +1,13 @@
-class ApiResponse<T> {
+class ApiResponse {
     statusCode: number;
     message: string;
-    data:T;
+    data:any;
     success:boolean
 
     constructor(
         statusCode: number,
+        data :any,
         message: string = "Execution Successfully Done",
-        data :T,
     )
     {
         this.message = message,
