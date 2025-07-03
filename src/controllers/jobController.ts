@@ -8,7 +8,7 @@ import { User } from "../models/userModel";
 
 const createJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const creator = await User.findById(req.userId)
-   if(creator && creator.role === "worker") throw new ApiError(403,"Permission Denied")
+   if(!creator || creator.role === "worker") throw new ApiError(403,"Permission Denied")
     
     const { title, description, priceRange, priority } = req.body
     
@@ -27,13 +27,23 @@ const createJob = asyncHandler(async (req: Request, res: Response): Promise<void
         },
         priority,
         image: cloudUrl,
-        createdBy:creator?._id,
+        createdBy:creator._id,
     })
     if (!createdJob) throw new ApiError(400, "Error In Creating Job")
-    creator?.jobPosted.push(createdJob._id as any)
-    await creator?.save()
+    creator.jobPosted.push(createdJob._id as any)
+    await creator.save()
     res.status(201).json(new ApiResponse(201,createdJob,"Job Created Successfully"))
 
 })
 
-export{createJob}
+const getJobById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const user = await User.findById(req.userId)
+    if (!user || user.role !== "worker") throw new ApiError(403, "Permission Denied You Must Be Worker")
+    
+    const jobId = req.params.id
+    const job = await Job.findById(jobId).populate("createdBy", "fullName phoneNo address profilePicture").lean()
+    if (!job) throw new ApiError(404, "Job Not Found")
+    res.status(200).json(new ApiResponse(200,job,"Job Fetched Successfully"))
+})
+
+export{createJob,getJobById}
