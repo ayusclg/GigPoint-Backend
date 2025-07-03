@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 import jwt from 'jsonwebtoken'
 
 export interface Iuser extends Document{
@@ -16,6 +16,7 @@ export interface Iuser extends Document{
     role: "user" | "worker" | "admin";
     generateRefreshToken(): string;
     generateAccessToken(): string;
+    jobPosted:mongoose.Types.ObjectId[]
 }
 
 
@@ -59,9 +60,13 @@ const userSchema = new mongoose.Schema({
     experienceYear: {
         type:Number,
     },
-    workDone: [{
+    jobDone: [{
         type: mongoose.Types.ObjectId,
-        ref:"Work"
+        ref:"Job"
+    }],
+    jobPosted:[ {
+        type: mongoose.Types.ObjectId,
+        ref:"Job"
     }],
     gender: {
         type: String,
@@ -70,7 +75,8 @@ const userSchema = new mongoose.Schema({
     },
     refreshToken: {
         type: String,
-    }
+    },
+   
 },
     {
     timestamps:true,

@@ -4,6 +4,9 @@ dotenv.config()
 import express from 'express'
 import { Request, Response } from 'express'
 import authRoutes from './routes/userRoutes'
+import { dbConnect } from './database'
+import cookieParser from 'cookie-parser'
+import jobRoutes from './routes/jobRoutes'
 
 const port = process.env.PORT || 5000
 const host = '127.0.0.1'
@@ -19,12 +22,16 @@ app.get("/", (req:Request, res:Response):void => {
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use()
+app.use(cookieParser())
 
 //routes
-app.use("/api/v1/auth",authRoutes)
+app.use("/api/v1/auth", authRoutes)
+app.use("/api/v1/job",jobRoutes)
 
 
-app.listen(port ,()=> {
-    console.log(`your server is running on http://${host}:${port}`)
+dbConnect().then(() => {
+    app.listen(port ,()=> {
+        console.log(`your server is running on http://${host}:${port}`)
+    })
 })
+.catch((err:any)=>console.log("Error In Db Connection",err.message))
