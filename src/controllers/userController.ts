@@ -3,28 +3,31 @@ import { asyncHandler } from "../utils/AsyncHandler";
 import { Request, Response } from "express";
 import bcrypt from 'bcrypt'
 import { uploadImageOnCloud } from "../middlewares/UploadImage";
+import {ApiError }from '../utils/ApiError'
+import { ApiResponse } from "../utils/ApiRes";
+
+
 
 const userRegister = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { fullName, email, password, address, phoneNo, experienceYear, skills } = req.body
+    const { fullName, email, password, address, phoneNo, experienceYear, skills,gender,role } = req.body
     
     const userExist = await User.findOne({ email, })
     if (userExist) throw new ApiError(502, "Please Login")
     
     const hashedPw  = await bcrypt.hash(password, 12) 
+   
     
-    const file = req.file as Express.Multer.File
-    const cloudUrl = await uploadImageOnCloud(file)
-
-
-
+        const file = req.file as Express.Multer.File
+       const  cloudUrl = await uploadImageOnCloud(file)
+    
     let experience;
-    const checkExperience = isNaN(experienceYear)
-    if (checkExperience) {
-        experience = Number(experienceYear)
+    if(experienceYear)
+    {
+        const checkExperience = isNaN(experienceYear)
+        if (checkExperience) {
+            experience = Number(experienceYear)
+        }
     }
-
-
-
 
     const userCreate = await User.create({
         email,
@@ -35,7 +38,8 @@ const userRegister = asyncHandler(async (req: Request, res: Response): Promise<v
         address,
         experienceYear:experience,
         skills, 
-        role:"worker"
+        role: role ||"worker",
+        gender,
     })
 
     const userCreated = await User.findById(userCreate._id).select("-password -refreshToken")
@@ -84,5 +88,6 @@ const userLogout = asyncHandler(async (req: Request, res: Response): Promise<voi
         httpOnly: true,
         secure:false,
     })
+    res.status(200).json(new ApiResponse(200," ","User logged Out"))
 })
 export {userRegister,userLogin,userLogout}

@@ -5,8 +5,8 @@ import { verifyUser } from "../middlewares/auth";
 
 const router = express.Router()
 
-router.route("/create").post(Upload.single("profilePictue"), userRegister)
+router.route("/create").post(Upload.single("profilePicture"), userRegister)
 router.route("/login").post(userLogin)
-router.route("/logout").get(verifyUser,userLogout)
+router.route("/logout").post(verifyUser,userLogout)
 
 export default router

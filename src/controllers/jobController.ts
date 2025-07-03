@@ -1,0 +1,39 @@
+import { asyncHandler } from "../utils/AsyncHandler";
+import { Request,Response } from "express";
+import { uploadImageOnCloud } from "../middlewares/UploadImage";
+import { Job } from "../models/jobModel";
+import { ApiError } from "../utils/ApiError";
+import { ApiResponse } from "../utils/ApiRes";
+import { User } from "../models/userModel";
+
+const createJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const creator = await User.findById(req.userId)
+   if(creator && creator.role === "worker") throw new ApiError(403,"Permission Denied")
+    
+    const { title, description, priceRange, priority } = req.body
+    
+    let cloudUrl;
+    if (req.files) {
+        const jobImages = req.files as Express.Multer.File[]
+         cloudUrl = await uploadImageOnCloud(jobImages[0])
+    }
+
+    const createdJob = await Job.create({
+        title,
+        description,
+        priceRange: {
+            initial:isNaN(priceRange.initial)? Number(priceRange.initial):priceRange.initial,
+            final:isNaN(priceRange.final)?Number(priceRange.final):priceRange.final,
+        },
+        priority,
+        image: cloudUrl,
+        createdBy:creator?._id,
+    })
+    if (!createdJob) throw new ApiError(400, "Error In Creating Job")
+    creator?.jobPosted.push(createdJob._id as any)
+    await creator?.save()
+    res.status(201).json(new ApiResponse(201,createdJob,"Job Created Successfully"))
+
+})
+
+export{createJob}
