@@ -12,6 +12,8 @@ export interface Ijob extends mongoose.Document{
     priceRange: PriceRange;
     priority: "low" | "medium" | "high";
     createdBy: mongoose.Types.ObjectId;
+    status: "searching" | "assigned" | "completed";
+
 }
 
 const priceRangeSchema = new mongoose.Schema<PriceRange>({
@@ -48,7 +50,7 @@ const jobSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum:["searching","assigned",]
+        enum:["searching","assigned","completed"]
     }
 }, {
     timestamps:true,
