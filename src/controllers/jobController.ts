@@ -130,6 +130,7 @@ const approveJobApplication = asyncHandler(async (req: Request, res: Response): 
 
     res.status(200).json(new ApiResponse (200,job,"Job Application Approved"))
 })
+
 const viewAllApplication = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userCheck = await User.findById(req.userId)
     if (!userCheck) throw new ApiError(404, "no user found")
@@ -146,4 +147,22 @@ const viewAllApplication = asyncHandler(async (req: Request, res: Response): Pro
     }
     res.status(200).json(new ApiResponse(200,{allApplications,totalApplications},"Applications Fetched"))
 })
-export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication}
+
+const getMyJobs = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    
+    const myJobsPost = await Job.find({ createdBy: req.userId }).populate("assignedTo", "fullName address phoneNo").lean()
+    if (!myJobsPost || myJobsPost.length === 0) throw new ApiError(404, "No Jobs Found")
+
+    const totalDocument = await Job.countDocuments({createdBy:req.userId})
+    if (totalDocument === 0) throw new ApiError(404, "No Documents")
+    
+    res.status(200).json(new ApiResponse(200,{myJobsPost, totalDocument },"All Jobs Fetched"))
+})
+
+const getSingleJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const myJob = await Job.findById(req.params.id).populate("assignedTo", "fullName address phoneNo").lean()
+    if (!myJob) throw new ApiError(404, "No Job Found")
+    res.status(200).json(new ApiResponse(200,myJob,"Job Fetched Successfully"))
+
+})
+export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleJob}
