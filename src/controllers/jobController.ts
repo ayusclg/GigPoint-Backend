@@ -46,4 +46,15 @@ const getJobById = asyncHandler(async (req: Request, res: Response): Promise<voi
     res.status(200).json(new ApiResponse(200,job,"Job Fetched Successfully"))
 })
 
-export{createJob,getJobById}
+const deleteJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const jobId = req.params.id
+    
+    const job = await Job.findById(jobId)
+    if (!job) throw new ApiError(404, "Job Details Not Found")
+    if(job.createdBy.toString() !== req.userId) throw new ApiError(403,"You Cannot Delete")
+    
+    await Job.findByIdAndDelete(job._id)
+    res.status(200).json(new ApiResponse(200,(job.title),"job Deleted Successfully"))
+})
+
+export{createJob,getJobById,deleteJob}
