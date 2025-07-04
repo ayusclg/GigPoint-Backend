@@ -16,7 +16,8 @@ export interface Iuser extends Document{
     role: "user" | "worker" | "admin";
     generateRefreshToken(): string;
     generateAccessToken(): string;
-    jobPosted:mongoose.Types.ObjectId[]
+    jobPosted: mongoose.Types.ObjectId[];
+    jobApplied:mongoose.Types.ObjectId[]
 }
 
 
@@ -76,6 +77,10 @@ const userSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
     },
+    jobApplied:[ {
+        type: mongoose.Types.ObjectId,
+        ref:"Application"
+    }]
    
 },
     {
