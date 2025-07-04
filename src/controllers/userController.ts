@@ -90,4 +90,27 @@ const userLogout = asyncHandler(async (req: Request, res: Response): Promise<voi
     })
     res.status(200).json(new ApiResponse(200," ","User logged Out"))
 })
-export {userRegister,userLogin,userLogout}
+
+const getUserById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const user = req.params.id
+    
+    const dbUser = await User.findById(user)
+    if (!dbUser) throw new ApiError(404, "Requested User Not Found")
+    let gotUser;
+    if (dbUser.role === "worker") {
+        gotUser = await User.findById(dbUser._id).select("-password -refreshToken -googleId -jobPosted")
+        .populate("jobDone" ,"ttile createdBy")
+    }
+    else {
+        gotUser = await User.findById(dbUser._id).select("-password -skills -experienceYear -jobDone -googleId -refreshToken").populate("jobPosted","title description status")
+    }
+    res.status(200).json(new ApiResponse(200,gotUser,`${dbUser.role} Fetched Successfully`))
+
+})
+
+const myProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const userProfile = await User.findById(req.userId).populate("jobDone", "title ").populate("jobPosted", "title address description").lean()
+    if (!userProfile) throw new ApiError(404, "User Not Found")
+    res.status(200).json(new ApiResponse(200,userProfile,"User Fetched Successfully"))
+})
+export {userRegister,userLogin,userLogout,getUserById,myProfile}

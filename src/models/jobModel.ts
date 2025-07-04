@@ -13,7 +13,9 @@ export interface Ijob extends mongoose.Document{
     priority: "low" | "medium" | "high";
     createdBy: mongoose.Types.ObjectId;
     status: "searching" | "assigned" | "completed";
-
+    applications: mongoose.Types.ObjectId[];
+    assignedTo: mongoose.Types.ObjectId;
+    skills: string[];
 }
 
 const priceRangeSchema = new mongoose.Schema<PriceRange>({
@@ -50,8 +52,21 @@ const jobSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum:["searching","assigned","completed"]
-    }
+        enum: ["searching", "assigned", "completed"],
+        default:"searching"
+    },
+    assignedTo: {
+        type: mongoose.Types.ObjectId,
+        ref:"User"
+    },
+    applications: [{
+        type: mongoose.Types.ObjectId,
+        ref:"Application"
+    }],
+    skills: [{
+        type: String,
+        required:true,
+    }]
 }, {
     timestamps:true,
 })
