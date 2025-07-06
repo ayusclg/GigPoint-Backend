@@ -6,7 +6,6 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiRes";
 import { User } from "../models/userModel";
 import { Application, Iapply } from "../models/applicationModel";
-import mongoose from "mongoose";
 
 const createJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const creator = await User.findById(req.userId)
@@ -76,7 +75,7 @@ const applyJob = asyncHandler(async (req: Request, res: Response):Promise<void> 
  
     const application = await Application.findOne({ jobId: job._id, appliedBy: req.userId })
     if(application) throw new ApiError(403,"Twice cant be Applied")
-   
+   if(job.assignedTo) throw new ApiError(403,"Job Already Assigned")
     let applyJob:Iapply;
     if (user.role === "worker") {
       
@@ -113,7 +112,7 @@ const approveJobApplication = asyncHandler(async (req: Request, res: Response): 
     if (!job) throw new ApiError(404, "Job Not Found")
      
   
-    
+        if(job.assignedTo) throw new ApiError(403,"Job Already Assigned")
     
     if (user.role == "worker" || job.createdBy.toString() !== req.userId) throw new ApiError(403, "You Are Not Allowed") 
     
@@ -165,4 +164,5 @@ const getSingleJob = asyncHandler(async (req: Request, res: Response): Promise<v
     res.status(200).json(new ApiResponse(200,myJob,"Job Fetched Successfully"))
 
 })
+
 export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleJob}
