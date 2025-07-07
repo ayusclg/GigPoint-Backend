@@ -7,6 +7,7 @@ import authRoutes from './routes/userRoutes'
 import { dbConnect } from './database'
 import cookieParser from 'cookie-parser'
 import jobRoutes from './routes/jobRoutes'
+import ratingRoutes from './routes/ratingRoutes'
 
 const port = process.env.PORT || 5000
 const host = '127.0.0.1'
@@ -26,7 +27,8 @@ app.use(cookieParser())
 
 //routes
 app.use("/api/v1/auth", authRoutes)
-app.use("/api/v1/job",jobRoutes)
+app.use("/api/v1/job", jobRoutes)
+app.use("/api/v1/rating",ratingRoutes)
 
 
 dbConnect().then(() => {

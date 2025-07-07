@@ -99,7 +99,7 @@ const getUserById = asyncHandler(async (req: Request, res: Response): Promise<vo
     let gotUser;
     if (dbUser.role === "worker") {
         gotUser = await User.findById(dbUser._id).select("-password -refreshToken -googleId -jobPosted")
-        .populate("jobDone" ,"ttile createdBy")
+        .populate("jobDone" ,"ttile createdBy").populate("rating","point comment")
     }
     else {
         gotUser = await User.findById(dbUser._id).select("-password -skills -experienceYear -jobDone -googleId -refreshToken").populate("jobPosted","title description status")
@@ -109,12 +109,17 @@ const getUserById = asyncHandler(async (req: Request, res: Response): Promise<vo
 })
 
 const myProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const userProfile = await User.findById(req.userId).populate("jobDone", "title ").populate("jobPosted", "title address description").lean()
-    if (!userProfile) throw new ApiError(404, "User Not Found")
-    res.status(200).json(new ApiResponse(200,userProfile,"User Fetched Successfully"))
+    const userProfile = await User.findById(req.userId)
+    if (!userProfile) { throw new ApiError(404, "User Not Found") }
+    let user;
+    (userProfile.role === "worker")
+        ? user = await User.findById(userProfile._id).select("-password -refreshToken -googleId -jobPosted")
+        .populate("jobDone", "ttile createdBy").populate("rating", "point comment")
+        
+        : user = await User.findById(userProfile._id).select("-password -skills -experienceYear -jobDone -googleId -refreshToken").populate("jobPosted", "title description status")
+    
+    res.status(200).json(new ApiResponse(200, user,"User Fetched Successfully"))
 })
 
-const userHistory = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    
-})
+
 export {userRegister,userLogin,userLogout,getUserById,myProfile}
