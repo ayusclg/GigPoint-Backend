@@ -5,7 +5,8 @@ export interface Iapply extends mongoose.Document{
     appliedAt: Date;
     appliedBy: mongoose.Types.ObjectId,
     status:"pending" | "accepted" |"rejected"
-
+    estimatedPrice: number;
+    isAccepted: boolean;
 }
 
 const applicationSchema = new mongoose.Schema({
@@ -18,11 +19,11 @@ const applicationSchema = new mongoose.Schema({
         type: Date,
         default:Date.now()  
     },
-    appliedBy: [{
+    appliedBy:  {
         type: mongoose.Types.ObjectId,
         ref: "User",
         required:true,
-    }],
+    } ,
     status: {
         type: String,
         enum: ["pending", "accepted", "rejected"],
@@ -32,6 +33,13 @@ const applicationSchema = new mongoose.Schema({
         type: String,
         required:true
     },
+    estimatedPrice: {
+        type: Number,
+        required:true,
+    },
+    isAccepted: {
+        type:Boolean
+    }
 })
 
 export const Application = mongoose.model<Iapply>("Application",applicationSchema)

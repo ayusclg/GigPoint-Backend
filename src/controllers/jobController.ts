@@ -24,7 +24,7 @@ const createJob = asyncHandler(async (req: Request, res: Response): Promise<void
         description,
         priceRange: {
             initial:isNaN(priceRange.initial)? Number(priceRange.initial):priceRange.initial,
-            final:isNaN(priceRange.final)?Number(priceRange.final):priceRange.final,
+            end:isNaN(priceRange.end)?Number(priceRange.end):priceRange.end,
         },
         priority,
         image: cloudUrl,
@@ -40,11 +40,12 @@ const createJob = asyncHandler(async (req: Request, res: Response): Promise<void
 
 const getJobById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const user = await User.findById(req.userId)
-    if (!user || user.role !== "worker") throw new ApiError(403, "Permission Denied You Must Be Worker")
+    if (!user  ) throw new ApiError(403, "No User Found")
     
     const jobId = req.params.id
     const job = await Job.findById(jobId).populate("createdBy", "fullName phoneNo address profilePicture").lean()
     if (!job) throw new ApiError(404, "Job Not Found")
+    if(user.role !== "worker" && job.createdBy._id.toString() !== user._id.toString()) throw new ApiError(403,"You cannot view")
     res.status(200).json(new ApiResponse(200,job,"Job Fetched Successfully"))
 })
 
@@ -72,7 +73,7 @@ const applyJob = asyncHandler(async (req: Request, res: Response):Promise<void> 
     const user = await User.findById(req.userId)
     if (!user) throw new ApiError(404, "User Not Found")
     
- 
+        const {estimatedPrice} =req.body
     const application = await Application.findOne({ jobId: job._id, appliedBy: req.userId })
     if(application) throw new ApiError(403,"Twice cant be Applied")
    if(job.assignedTo) throw new ApiError(403,"Job Already Assigned")
@@ -86,7 +87,8 @@ const applyJob = asyncHandler(async (req: Request, res: Response):Promise<void> 
          applyJob = await Application.create({
             jobId: job._id,
             appliedBy: req.userId,
-            message:req.body.message,
+             message: req.body.message,
+            estimatedPrice:Number(estimatedPrice),
         })
         if (!applyJob) throw new ApiError(400, "Job Application Not Created")
             user.jobApplied.push(applyJob._id as any)
@@ -104,30 +106,26 @@ const applyJob = asyncHandler(async (req: Request, res: Response):Promise<void> 
     })
 
 const approveJobApplication = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { applicantId } = req.body
+    const { applicationId } = req.body
     const user = await User.findById(req.userId) 
     if (!user) throw new ApiError(404, "User Not Found")
     
     const job = await Job.findById(req.params.id).populate("assignedTo","fullName address phoneNo email profilePicture")
     if (!job) throw new ApiError(404, "Job Not Found")
-     
+    if(job.assignedTo) throw new ApiError(403,"Job Already Assigned")
+    
+     const application = await Application.findById(applicationId)
+     if(!application) throw new ApiError(404,"No Application Found")  
   
-        if(job.assignedTo) throw new ApiError(403,"Job Already Assigned")
-    
-    if (user.role == "worker" || job.createdBy.toString() !== req.userId) throw new ApiError(403, "You Are Not Allowed") 
-    
-    const approveJob = await Application.findOne({ jobId: job._id })
-    if (!approveJob) throw new ApiError(404, "No Applications Yet")
-    
-    if ((approveJob.appliedBy as any).includes(applicantId)) {
-        job.assignedTo = applicantId
-        await job.save()
-    } else { throw new ApiError(404, "No such Applicant found") }
-
+    if (user.role == "worker" && job.createdBy.toString() !== req.userId) throw new ApiError(403, "You Are Not Allowed") 
+    job.assignedTo = application.appliedBy
     job.status = "assigned"
+    job.finalPrice = application.estimatedPrice
     await job.save()
+    application.isAccepted = true
+    await application.save()    
 
-    res.status(200).json(new ApiResponse (200,job,"Job Application Approved"))
+    res.status(200).json(new ApiResponse (200,{job,application},"Job Application Approved"))
 })
 
 const viewAllApplication = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -164,5 +162,14 @@ const getSingleJob = asyncHandler(async (req: Request, res: Response): Promise<v
     res.status(200).json(new ApiResponse(200,myJob,"Job Fetched Successfully"))
 
 })
+const getSingleApplication = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const applicationId = req.params.id
+    const application = await Application.findById(applicationId).populate("jobId","createdBy")
+    if (!application) throw new ApiError(404, "No Application Found")
+    if (application.appliedBy.toString() !== req.userId && (application.jobId as any).createdBy.toString() !== req.userId)
+        throw new ApiError(403, "You are not allowed")
+    
+    res.status(200).json(new ApiResponse(200,application,"Application Fetched Successfully"))
+})
 
-export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleJob}
+export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleJob,getSingleApplication}
