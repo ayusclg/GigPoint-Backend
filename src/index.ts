@@ -8,6 +8,8 @@ import { dbConnect } from './database'
 import cookieParser from 'cookie-parser'
 import jobRoutes from './routes/jobRoutes'
 import ratingRoutes from './routes/ratingRoutes'
+import passport from 'passport'
+import googleRoutes from './routes/gooleRoutes'
 
 const port = process.env.PORT || 5000
 const host = '127.0.0.1'
@@ -20,7 +22,7 @@ app.get("/", (req:Request, res:Response):void => {
 })
 
 //middlewares
-
+passport.initialize()
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
@@ -29,6 +31,7 @@ app.use(cookieParser())
 app.use("/api/v1/auth", authRoutes)
 app.use("/api/v1/job", jobRoutes)
 app.use("/api/v1/rating",ratingRoutes)
+app.use("/api/v1/oauth",googleRoutes)
 
 
 dbConnect().then(() => {
