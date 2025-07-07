@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 
 export interface Irating extends mongoose.Document{
-    raterId: mongoose.Types.ObjectId;
+    raterUserId: mongoose.Types.ObjectId;
     ratedUserId: mongoose.Types.ObjectId;
     point: number;
     comment: string;
 }
 
 const ratingSchema = new mongoose.Schema({
-    raterId: {
+    raterUserId: {
         type: mongoose.Types.ObjectId,
         ref: "User",
         required:true,
