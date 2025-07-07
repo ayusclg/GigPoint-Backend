@@ -113,4 +113,8 @@ const myProfile = asyncHandler(async (req: Request, res: Response): Promise<void
     if (!userProfile) throw new ApiError(404, "User Not Found")
     res.status(200).json(new ApiResponse(200,userProfile,"User Fetched Successfully"))
 })
+
+const userHistory = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    
+})
 export {userRegister,userLogin,userLogout,getUserById,myProfile}

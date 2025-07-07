@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export interface PriceRange {
     initial: number;
-    final: number;
+    end: number;
   }
   
 export interface Ijob extends mongoose.Document{
@@ -16,11 +16,12 @@ export interface Ijob extends mongoose.Document{
     applications: mongoose.Types.ObjectId[];
     assignedTo: mongoose.Types.ObjectId;
     skills: string[];
+    finalPrice: number;
 }
 
 const priceRangeSchema = new mongoose.Schema<PriceRange>({
     initial: { type: Number, required: true },
-    final: { type: Number, required: true },
+    end: { type: Number, required: true },
 },
 { _id: false });
   
@@ -49,6 +50,9 @@ const jobSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "User",
         required:true,
+    },
+    finalPrice: {
+        type:Number,
     },
     status: {
         type: String,
