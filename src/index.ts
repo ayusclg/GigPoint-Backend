@@ -7,6 +7,7 @@ import authRoutes from './routes/userRoutes'
 import { dbConnect } from './database'
 import cookieParser from 'cookie-parser'
 import jobRoutes from './routes/jobRoutes'
+import ratingRoutes from './routes/ratingRoutes'
 import passport from 'passport'
 import googleRoutes from './routes/gooleRoutes'
 
@@ -28,8 +29,10 @@ app.use(cookieParser())
 
 //routes
 app.use("/api/v1/auth", authRoutes)
-app.use("/api/v1/job",jobRoutes)
+app.use("/api/v1/job", jobRoutes)
+app.use("/api/v1/rating",ratingRoutes)
 app.use("/api/v1/oauth",googleRoutes)
+
 
 dbConnect().then(() => {
     app.listen(port ,()=> {

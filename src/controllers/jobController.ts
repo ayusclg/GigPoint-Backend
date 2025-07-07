@@ -112,12 +112,13 @@ const approveJobApplication = asyncHandler(async (req: Request, res: Response): 
     
     const job = await Job.findById(req.params.id).populate("assignedTo","fullName address phoneNo email profilePicture")
     if (!job) throw new ApiError(404, "Job Not Found")
-    if(job.assignedTo) throw new ApiError(403,"Job Already Assigned")
+    
     
      const application = await Application.findById(applicationId)
      if(!application) throw new ApiError(404,"No Application Found")  
   
-    if (user.role == "worker" && job.createdBy.toString() !== req.userId) throw new ApiError(403, "You Are Not Allowed") 
+    if (user.role == "worker" || job.createdBy.toString() !== req.userId) throw new ApiError(403, "You Are Not Allowed") 
+        if(job.assignedTo) throw new ApiError(403,"Job Already Assigned")
     job.assignedTo = application.appliedBy
     job.status = "assigned"
     job.finalPrice = application.estimatedPrice

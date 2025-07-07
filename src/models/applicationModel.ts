@@ -38,7 +38,8 @@ const applicationSchema = new mongoose.Schema({
         required:true,
     },
     isAccepted: {
-        type:Boolean
+        type: Boolean,
+        default:false,
     }
 })
 
