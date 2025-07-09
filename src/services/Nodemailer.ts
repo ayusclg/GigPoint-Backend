@@ -1,7 +1,5 @@
 import nodemailer from 'nodemailer'
 
-
-
 interface Imail {
     to: string,
     subject: string,
@@ -9,7 +7,6 @@ interface Imail {
     message?: string,
    
 }
-
 
 const providerEmail =process.env.EMAIL_USER
 const transport = nodemailer.createTransport({

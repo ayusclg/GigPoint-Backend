@@ -163,6 +163,7 @@ const getSingleJob = asyncHandler(async (req: Request, res: Response): Promise<v
     res.status(200).json(new ApiResponse(200,myJob,"Job Fetched Successfully"))
 
 })
+
 const getSingleApplication = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const applicationId = req.params.id
     const application = await Application.findById(applicationId).populate("jobId","createdBy")
