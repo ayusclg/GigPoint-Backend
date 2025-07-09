@@ -1,4 +1,3 @@
-
 import { asyncHandler } from "../utils/AsyncHandler"
 import { Request, Response } from "express"
 import { Iuser } from "../models/userModel"
