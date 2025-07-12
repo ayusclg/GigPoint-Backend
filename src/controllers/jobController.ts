@@ -43,7 +43,10 @@ const getJobById = asyncHandler(async (req: Request, res: Response): Promise<voi
     if (!user  ) throw new ApiError(403, "No User Found")
     
     const jobId = req.params.id
-    const job = await Job.findById(jobId).populate("createdBy", "fullName phoneNo address profilePicture").lean()
+    const job = await Job.findById(jobId)
+      .populate("createdBy", "fullName phoneNo address profilePicture")
+      .populate("assignedTo", "fullName address phoneNo")
+      .lean();
     if (!job) throw new ApiError(404, "Job Not Found")
     if(user.role !== "worker" && job.createdBy._id.toString() !== user._id.toString()) throw new ApiError(403,"You cannot view")
     res.status(200).json(new ApiResponse(200,job,"Job Fetched Successfully"))
@@ -135,7 +138,7 @@ const viewAllApplication = asyncHandler(async (req: Request, res: Response): Pro
     let allApplications;
     let totalApplications;
 
-    if (userCheck.role !== "worker") {
+    if (userCheck.role !== "worker" ) {
         allApplications = await Application.findOne({ jobId: req.params.id }).populate("appliedBy", "fullName email address phoneNo skills experienceYear ratings")   
         if (!allApplications) throw new ApiError(404, "No applicants found")
        totalApplications = await Application.countDocuments(allApplications.appliedBy)
@@ -157,12 +160,6 @@ const getMyJobs = asyncHandler(async (req: Request, res: Response): Promise<void
     res.status(200).json(new ApiResponse(200,{myJobsPost, totalDocument },"All Jobs Fetched"))
 })
 
-const getSingleJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const myJob = await Job.findById(req.params.id).populate("assignedTo", "fullName address phoneNo").lean()
-    if (!myJob) throw new ApiError(404, "No Job Found")
-    res.status(200).json(new ApiResponse(200,myJob,"Job Fetched Successfully"))
-
-})
 
 const getSingleApplication = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const applicationId = req.params.id
@@ -174,4 +171,5 @@ const getSingleApplication = asyncHandler(async (req: Request, res: Response): P
     res.status(200).json(new ApiResponse(200,application,"Application Fetched Successfully"))
 })
 
-export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleJob,getSingleApplication}
+
+export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleApplication}
