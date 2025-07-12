@@ -136,17 +136,17 @@ const viewAllApplication = asyncHandler(async (req: Request, res: Response): Pro
     const userCheck = await User.findById(req.userId)
     if (!userCheck) throw new ApiError(404, "no user found")
     let allApplications;
-    let totalApplications;
+ 
 
     if (userCheck.role !== "worker" ) {
         allApplications = await Application.findOne({ jobId: req.params.id }).populate("appliedBy", "fullName email address phoneNo skills experienceYear ratings")   
         if (!allApplications) throw new ApiError(404, "No applicants found")
-       totalApplications = await Application.countDocuments(allApplications.appliedBy)
+      
     }
     else {
         throw new ApiError(403,"Permission Denied")
     }
-    res.status(200).json(new ApiResponse(200,{allApplications,totalApplications},"Applications Fetched"))
+    res.status(200).json(new ApiResponse(200,{allApplications},"Applications Fetched"))
 })
 
 const getMyJobs = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -171,5 +171,32 @@ const getSingleApplication = asyncHandler(async (req: Request, res: Response): P
     res.status(200).json(new ApiResponse(200,application,"Application Fetched Successfully"))
 })
 
+const viewMyApplications = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const page = parseInt(req.query.page as string) || 1
+    const perPage = parseInt(req.query.perPage as string) || 5
+    const sortOption = req.query.sortOption as string || 'status'
 
-export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleApplication}
+    const userCheck = await User.findById(req.userId)
+    if (!userCheck || userCheck.role !== 'worker') throw new ApiError(403, "User Have No Permission")
+    
+     const totalApplications = await Application.countDocuments({
+       appliedBy: userCheck._id,
+     });
+     if (totalApplications == 0) throw new ApiError(404, "0 Applications");
+    
+    const skip = (Number(page) - 1) * Number(perPage)
+    
+    const myApplications = await Application.find({ appliedBy: userCheck._id }).sort({[sortOption]:1}).skip(skip).limit(perPage).populate("jobId","title skills ").lean()
+    if (myApplications == null) throw new ApiError(404, "No Applications Found") 
+    
+    const response = {
+        totalApplications,
+        myApplications,
+        page,
+        perPage,
+    }
+    res.status(200).json(new ApiResponse(200,response,"Applications Fetched Successfully"))
+})
+
+
+export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleApplication,viewMyApplications}

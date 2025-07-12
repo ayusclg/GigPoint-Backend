@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
-import express from 'express'
+import express, { NextFunction } from 'express'
 import { Request, Response } from 'express'
 import authRoutes from './routes/userRoutes'
 import { dbConnect } from './database'
@@ -39,4 +39,14 @@ dbConnect().then(() => {
         console.log(`your server is running on http://${host}:${port}`)
     })
 })
-.catch((err:any)=>console.log("Error In Db Connection",err.message))
+    .catch((err: any) => console.log("Error In Db Connection", err.message))
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    res.status(err.status || 500).json({
+        message: err.message,
+        stack: err.stack,
+        data:null,
+        ...err
+    })
+    
+    })
