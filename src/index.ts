@@ -10,6 +10,7 @@ import jobRoutes from './routes/jobRoutes'
 import ratingRoutes from './routes/ratingRoutes'
 import passport from 'passport'
 import googleRoutes from './routes/gooleRoutes'
+import { swaggerDocs } from './config/swagger'
 
 const port = process.env.PORT || 5000
 const host = '127.0.0.1'
@@ -21,6 +22,8 @@ app.get("/", (req:Request, res:Response):void => {
     res.send("<h1>waving from gigpoint Backend</h1>")
 })
 
+
+ 
 //middlewares
 passport.initialize()
 app.use(express.json())
@@ -33,6 +36,8 @@ app.use("/api/v1/job", jobRoutes)
 app.use("/api/v1/rating",ratingRoutes)
 app.use("/api/v1/oauth",googleRoutes)
 
+//documentation
+swaggerDocs(app, Number(port));
 
 dbConnect().then(() => {
     app.listen(port ,()=> {
