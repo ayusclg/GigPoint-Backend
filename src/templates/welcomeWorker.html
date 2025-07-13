@@ -1,26 +1,44 @@
-const workerWelcomeTemplate = `
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
     <title>Welcome to GigPoint</title>
   </head>
-  <body>
-    <div style="text-align: right; font-weight: bold; font-size: 20px">
-      GigPoint
-    </div>
-    <div style="padding: 20px">
+  <body style="background-color: #ffffff; margin: 0; padding: 0">
+    <div
+      style="
+        max-width: 600px;
+        margin: 30px auto;
+        border: 1px solid #000000;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        color: #000000;
+      "
+    >
+      <div
+        style="
+          text-align: left;
+          font-weight: bold;
+          font-size: 20px;
+          margin-bottom: 20px;
+        "
+      >
+        GigPoint
+      </div>
+
       <h2>Welcome to GigPoint, {{fullname}}!</h2>
       <p>
-        We’re thrilled to have you join our platform as a
-        <strong>worker</strong>. GigPoint connects skilled individuals like you
-        with real opportunities to earn, grow, and build a strong profile.
+        We’re happy to have you join our platform as a <strong>worker</strong>.
+        GigPoint connects skilled individuals like you with real opportunities
+        to earn, grow, and build a strong profile.
       </p>
-      <p>Apply on Jobs that matches your skill and get earned</p>
       <p>
-        Your journey to success starts now — let's build your future together 🚀
+        Apply on jobs that match your skill and start earning.
+        <strong>Start today!</strong>
+      </p>
+      <p>
+        Your journey to success starts now. Let's build your future together.
       </p>
     </div>
   </body>
 </html>
-`;

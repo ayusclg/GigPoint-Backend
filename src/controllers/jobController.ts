@@ -6,6 +6,13 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiRes";
 import { User } from "../models/userModel";
 import { Application, Iapply } from "../models/applicationModel";
+import path from "path";
+import fs from "fs";
+import { sendMail } from "../services/Nodemailer";
+
+const applyEmail = path.join(__dirname, '../templates/jobApply.html')
+const apply = fs.readFileSync(applyEmail,"utf-8")
+
 
 const createJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const creator = await User.findById(req.userId)
@@ -70,7 +77,7 @@ const deleteJob = asyncHandler(async (req: Request, res: Response): Promise<void
 })
 
 const applyJob = asyncHandler(async (req: Request, res: Response):Promise<void> => {
-    const job = await Job.findById(req.params.id)
+    const job = await Job.findById(req.params.id).populate("createdBy" ,"email")
     if (!job) throw new ApiError(404, "Job Not Found")
     
     const user = await User.findById(req.userId)
@@ -102,8 +109,15 @@ const applyJob = asyncHandler(async (req: Request, res: Response):Promise<void> 
     else {
         throw new ApiError(403,"Permission Denied")
     }
-  
-
+    const applyHtml = apply.replace("{{workerName}}", user.fullName)
+                            .replace("{{jobTitle}}", job.title);
+    const options = {
+        to: (job.createdBy as any).email,
+        subject: "Your Job Posting Has An Application",
+        html:applyHtml,
+        message:"Under Dev soon Prod"
+    }
+    await sendMail(options)
    res.status(201).json(new ApiResponse(201,applyJob,"Job Application Created"))
     
     })
