@@ -81,7 +81,8 @@ const applyJob = asyncHandler(async (req: Request, res: Response):Promise<void> 
     if (!job) throw new ApiError(404, "Job Not Found")
     
     const user = await User.findById(req.userId)
-    if (!user) throw new ApiError(404, "User Not Found")
+    if (!user || !user.isAvailable ) throw new ApiError(404, "Please mark yourself as available")
+    
     
         const {estimatedPrice} =req.body
     const application = await Application.findOne({ jobId: job._id, appliedBy: req.userId })
@@ -131,7 +132,7 @@ const approveJobApplication = asyncHandler(async (req: Request, res: Response): 
     if (!job) throw new ApiError(404, "Job Not Found")
     
     
-     const application = await Application.findById(applicationId)
+     const application = await Application.findById(applicationId).populate("appliedBy","fullname isAvailable")
      if(!application) throw new ApiError(404,"No Application Found")  
   
     if (user.role == "worker" || job.createdBy.toString() !== req.userId) throw new ApiError(403, "You Are Not Allowed") 
@@ -140,8 +141,12 @@ const approveJobApplication = asyncHandler(async (req: Request, res: Response): 
     job.status = "assigned"
     job.finalPrice = application.estimatedPrice
     await job.save()
-    application.isAccepted = true
-    await application.save()    
+    application.isAccepted = true; 
+    await application.save(); 
+    
+    const workerId = application.appliedBy._id;
+    await User.findByIdAndUpdate(workerId, { isAvailable: false });
+  
 
     res.status(200).json(new ApiResponse (200,{job,application},"Job Application Approved"))
 })
