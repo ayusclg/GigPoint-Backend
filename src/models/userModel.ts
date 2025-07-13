@@ -19,6 +19,7 @@ export interface Iuser extends Document{
     jobPosted: mongoose.Types.ObjectId[];
     jobApplied: mongoose.Types.ObjectId[]
     rating: mongoose.Types.ObjectId[];
+    isAvailable: boolean;
 }
 
 
@@ -85,8 +86,11 @@ const userSchema = new mongoose.Schema({
     rating: [{
         type: mongoose.Types.ObjectId,
         ref:"Rating"
-    }]
-   
+    }],
+   isAvailable: {
+       type: Boolean,
+       default:true
+   }
 },
     {
     timestamps:true,

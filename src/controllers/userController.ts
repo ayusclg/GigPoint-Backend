@@ -146,7 +146,7 @@ const getUserById = asyncHandler(
     } else {
       gotUser = await User.findById(dbUser._id)
         .select(
-          "-password -skills -experienceYear -jobDone -googleId -refreshToken"
+          "-password -skills -experienceYear -jobDone -googleId -refreshToken -isAvailable"
         )
         .populate("jobPosted", "title description status");
     }
@@ -172,7 +172,7 @@ const myProfile = asyncHandler(
           .populate("rating", "point comment"))
       : (user = await User.findById(userProfile._id)
           .select(
-            "-password -skills -experienceYear -jobDone -googleId -refreshToken"
+            "-password -skills -experienceYear -jobDone -googleId -refreshToken -isAvailable"
           )
           .populate("jobPosted", "title description status"));
 

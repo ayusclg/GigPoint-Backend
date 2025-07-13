@@ -11,6 +11,7 @@ import ratingRoutes from './routes/ratingRoutes'
 import passport from 'passport'
 import googleRoutes from './routes/gooleRoutes'
 import { swaggerDocs } from './config/swagger'
+import aiRoutes from './routes/aiRoute'
 
 const port = process.env.PORT || 5000
 const host = '127.0.0.1'
@@ -34,7 +35,8 @@ app.use(cookieParser())
 app.use("/api/v1/auth", authRoutes)
 app.use("/api/v1/job", jobRoutes)
 app.use("/api/v1/rating",ratingRoutes)
-app.use("/api/v1/oauth",googleRoutes)
+app.use("/api/v1/oauth", googleRoutes)
+app.use("/ai",aiRoutes)
 
 //documentation
 swaggerDocs(app, Number(port));
