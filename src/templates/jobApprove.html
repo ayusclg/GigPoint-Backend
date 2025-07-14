@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>GigPoint Notification</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f4f8ff;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 70, 140, 0.1);
+      }
+      .header {
+        background-color: #007bff;
+        color: #ffffff;
+        padding: 20px;
+        text-align: left;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .content {
+        padding: 30px 20px;
+        text-align: left;
+      }
+      .title {
+        font-size: 22px;
+        color: #007bff;
+        margin-bottom: 15px;
+      }
+      .message {
+        font-size: 16px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 14px;
+        color: #999999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">GigPoint</div>
+      <div class="content">
+        <div class="title">{{title}}</div>
+        <div class="message">
+          We're excited to let you know that your application has been approved.<br /><br />
+          <strong>Please check your dashboard for other news and updates.</strong>
+        </div>
+      </div>
+      <div class="footer">&copy; 2025 GigPoint. All rights reserved.</div>
+    </div>
+  </body>
+</html>

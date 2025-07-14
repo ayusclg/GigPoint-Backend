@@ -1,26 +1,22 @@
 import  { Request, Response} from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-
+import { ApiError } from "../utils/ApiError";
+import { asyncHandler } from "../utils/AsyncHandler";
+import { ApiResponse } from "../utils/ApiRes";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 
- const getAI = async (req: Request, res: Response): Promise<void> => {
+ const getAI = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { question } = req.body as { question?: string };
 
 
     if (!question || typeof question !== "string") {
-      res
-        .status(400)
-        .json({ error: "Question is required and must be a string" });
-      return;
+    throw new ApiError(404,"Only Strings Are Allowed")
     }
 
-    try {
-    
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-   
       const chat = model.startChat({
         history: [
           {
@@ -35,7 +31,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
             role: "model",
             parts: [
               {
-                text: "Understood. I will answer simply and quickly in points.",
+                text: "Understood. I will answer simply and quickly in points. I will never go outside of the topic",
               },
             ],
           },
@@ -50,12 +46,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
       const answer: string = response.text();
 
     
-      res.status(200).json({ answer });
-    } catch (error: any) {
-      console.error("Gemini Error:", error.message || error);
-      res.status(500).json({ error: "AI request failed" });
-    }
-  }
+      res.status(200).json(new ApiResponse(200,answer,"Question Solved"))
+    
+ }
+)
 
 
 

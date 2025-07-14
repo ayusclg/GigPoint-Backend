@@ -3,42 +3,75 @@
   <head>
     <meta charset="UTF-8" />
     <title>Welcome to GigPoint</title>
-  </head>
-  <body style="background-color: #ffffff; margin: 0; padding: 0">
-    <div
-      style="
+    <style>
+      body {
+        background-color: #f4f8ff;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+      }
+      .container {
         max-width: 600px;
         margin: 30px auto;
-        border: 1px solid #000000;
-        padding: 20px;
-        font-family: Arial, sans-serif;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 70, 140, 0.1);
+        padding: 30px 20px;
         color: #000000;
-      "
-    >
-      <div
-        style="
-          text-align: left;
-          font-weight: bold;
-          font-size: 20px;
-          margin-bottom: 20px;
-        "
-      >
-        GigPoint
+      }
+      .header {
+        font-size: 24px;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #007bff;
+        padding: 20px;
+        text-align: left;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+      }
+      .title {
+        font-size: 22px;
+        color: #007bff;
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      .message {
+        font-size: 16px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 14px;
+        color: #999999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">GigPoint</div>
+
+      <div class="title">Welcome to GigPoint, {{fullname}}!</div>
+
+      <div class="message">
+        <p>
+          We’re happy to have you join our platform as a
+          <strong>worker</strong>. GigPoint connects skilled individuals like
+          you with real opportunities to earn, grow, and build a strong profile.
+        </p>
+
+        <p>
+          Apply on jobs that match your skill and start earning.
+          <strong>Start today!</strong>
+        </p>
+
+        <p>
+          Your journey to success starts now. Let's build your future together.
+        </p>
       </div>
 
-      <h2>Welcome to GigPoint, {{fullname}}!</h2>
-      <p>
-        We’re happy to have you join our platform as a <strong>worker</strong>.
-        GigPoint connects skilled individuals like you with real opportunities
-        to earn, grow, and build a strong profile.
-      </p>
-      <p>
-        Apply on jobs that match your skill and start earning.
-        <strong>Start today!</strong>
-      </p>
-      <p>
-        Your journey to success starts now. Let's build your future together.
-      </p>
+      <div class="footer">&copy; 2025 GigPoint. All rights reserved.</div>
     </div>
   </body>
 </html>

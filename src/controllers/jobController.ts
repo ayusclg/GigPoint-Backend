@@ -13,6 +13,8 @@ import { sendMail } from "../services/Nodemailer";
 const applyEmail = path.join(__dirname, '../templates/jobApply.html')
 const apply = fs.readFileSync(applyEmail,"utf-8")
 
+const approveEmail = path.join(__dirname, '../templates/jobApprove.html')
+const approve = fs.readFileSync(approveEmail,'utf-8')
 
 const createJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const creator = await User.findById(req.userId)
@@ -132,7 +134,7 @@ const approveJobApplication = asyncHandler(async (req: Request, res: Response): 
     if (!job) throw new ApiError(404, "Job Not Found")
     
     
-     const application = await Application.findById(applicationId).populate("appliedBy","fullname isAvailable")
+     const application = await Application.findById(applicationId).populate("appliedBy","fullname isAvailable email")
      if(!application) throw new ApiError(404,"No Application Found")  
   
     if (user.role == "worker" || job.createdBy.toString() !== req.userId) throw new ApiError(403, "You Are Not Allowed") 
@@ -145,9 +147,19 @@ const approveJobApplication = asyncHandler(async (req: Request, res: Response): 
     await application.save(); 
     
     const workerId = application.appliedBy._id;
+    const worker = await User.findById(workerId)
+    if(!worker) throw new ApiError(404,"Worker Not Found")
     await User.findByIdAndUpdate(workerId, { isAvailable: false });
-  
+    const approveHtml = approve.replace('{{title}}', job.title);
 
+    const options = {
+        to: worker.email,
+        subject: "Your Job Application Has Been Approved",
+        html: approveHtml,
+        message: "Under Dev soon Prod"
+        
+    }
+    await sendMail(options)
     res.status(200).json(new ApiResponse (200,{job,application},"Job Application Approved"))
 })
 
