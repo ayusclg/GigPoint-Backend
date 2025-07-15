@@ -182,4 +182,44 @@ const myProfile = asyncHandler(
   }
 );
 
-export { workerRegister, workerLogin, userLogout, getUserById, myProfile };
+const updateWorkerDetails = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { address, phoneNo, skills, currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user) throw new ApiError(403, "User Not Found");
+
+    if (skills) {
+      if (!Array.isArray(skills))
+        throw new ApiError(400, "Skills Must Be Array");
+    }
+    const checkPassword = await bcrypt.compare(
+      currentPassword,
+      user.password as string
+    );
+    if (!checkPassword)
+      throw new ApiError(403, "Please Enter Correct Current Password");
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    let cloudUrl;
+    if (req.file) {
+      const file = req.file as Express.Multer.File;
+      cloudUrl = await uploadImageOnCloud(file);
+    }
+    if (address) user.address = address;
+    if (phoneNo) user.phoneNo = phoneNo;
+    if (skills) user.skills = skills;
+    if (newPassword) user.password = hashedPassword;
+    if (cloudUrl) user.profilePicture = cloudUrl;
+    await user.save();
+    res.status(200).json(new ApiResponse(200, user, "User Detail Updated"));
+  }
+);
+
+export {
+  workerRegister,
+  workerLogin,
+  userLogout,
+  getUserById,
+  myProfile,
+  updateWorkerDetails,
+};
