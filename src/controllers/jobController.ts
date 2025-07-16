@@ -229,6 +229,31 @@ const viewMyApplications = asyncHandler(async (req: Request, res: Response): Pro
     res.status(200).json(new ApiResponse(200,response,"Applications Fetched Successfully"))
 })
 
+const searchJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const title = req.query.title as string || " "
+    const page = parseInt(req.query.page as string) || 1
+    const perPage = parseInt(req.query.perPage as string) || 4
+    const sortOption = req.query.sortOption as string
 
+    const user = await User.findById(req.userId)
+    if(!user || user.role !== "worker") throw new ApiError(403,"Only Workers Can Search Job")
 
-export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleApplication,viewMyApplications}
+    let query: Record<string, any> = {};
+    query.title = new RegExp(title,"i")
+    const countQuery = await Job.countDocuments(query)
+    if (countQuery == null) throw new ApiError(404, "No Jobs Found")
+    
+    const skip = (page-1) *perPage 
+    const result = await Job.find(query).sort({[sortOption]:1}).select("-skills  -assignedTo -applications -finalPrice").skip(skip).limit(perPage).lean()
+    
+    const response = {
+        page,
+        perPage,
+        result,
+        totalJobs:countQuery
+    }
+    res.status(200).json(new ApiResponse(200,response,"Job Search Done"))
+    
+})
+
+export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleApplication,viewMyApplications,searchJob}
