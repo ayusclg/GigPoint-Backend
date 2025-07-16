@@ -8,6 +8,7 @@ import { ApiResponse } from "../utils/ApiRes";
 import path from "path";
 import fs from "fs";
 import { sendMail } from "../services/Nodemailer";
+import { filterQuery } from "../middlewares/filterQuery";
 
 const welcomeEmail = path.join(__dirname, "../templates/welcomeWorker.html");
 const welcome = fs.readFileSync(welcomeEmail, "utf-8");
@@ -215,6 +216,40 @@ const updateWorkerDetails = asyncHandler(
   }
 );
 
+const searchWorker = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const filter = (req.query.filter as string) ;
+    const page = parseInt(req.query.page as string) || 1;
+    const perPage = parseInt(req.query.perPage as string) || 4;
+    const sortOption = (req.query.sortOption as string) || "createdAt";
+
+    const query = filter ? filterQuery(filter) : {
+      role:"worker"
+    }
+
+    const totalDocuments = await User.countDocuments(query);
+    if (!totalDocuments) throw new ApiError(404, "No Documents found");
+
+    const limit = perPage
+    const skip = (page-1) *perPage
+
+    const result = await User.find(query)
+      .select(
+        "-password -refreshToken -email -phoneNo -jobPosted -jobDone -experienceYear -skills -isAvailable"
+      )
+      .sort({ [sortOption]: 1 }).skip(skip).limit(limit)
+      .lean();
+    
+    const response = {
+      page,
+      perPage,
+      totalDocuments,
+      result,
+    }
+    res.status(200).json(new ApiResponse(200,response,"Search Successfull"))
+  }
+);
+
 export {
   workerRegister,
   workerLogin,
@@ -222,4 +257,5 @@ export {
   getUserById,
   myProfile,
   updateWorkerDetails,
+  searchWorker
 };
