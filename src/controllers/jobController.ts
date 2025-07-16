@@ -230,4 +230,5 @@ const viewMyApplications = asyncHandler(async (req: Request, res: Response): Pro
 })
 
 
+
 export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleApplication,viewMyApplications}
