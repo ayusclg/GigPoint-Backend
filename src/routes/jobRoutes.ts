@@ -1,7 +1,7 @@
 import express from 'express'
 import { verifyUser } from '../middlewares/auth'
 import { Upload } from '../middlewares/UploadImage'
-import { applyJob, approveJobApplication, createJob, deleteJob, getJobById, getMyJobs, getSingleApplication, viewAllApplication,viewMyApplications } from '../controllers/jobController'
+import { applyJob, approveJobApplication, createJob, deleteJob, getJobById, getMyJobs, getSingleApplication, searchJob, viewAllApplication,viewMyApplications } from '../controllers/jobController'
 
 const router = express.Router()
 
@@ -13,6 +13,7 @@ router.route("/worker/apply/:id").post(verifyUser, applyJob)
 router.route("/user/approve/:id").post(verifyUser, approveJobApplication)
 router.route("/user/apply/view/:id").get(verifyUser, viewAllApplication)
 router.route("/get/application/:id").get(verifyUser, getSingleApplication)
-router.route("/worker/get/application").get(verifyUser,viewMyApplications)
+router.route("/worker/get/application").get(verifyUser, viewMyApplications)
+router.route("/searchJob").post(verifyUser,searchJob)
 
 export default router
