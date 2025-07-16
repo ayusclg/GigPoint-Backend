@@ -223,19 +223,17 @@ const searchWorker = asyncHandler(
     const perPage = parseInt(req.query.perPage as string) || 4;
     const sortOption = (req.query.sortOption as string) || "createdAt";
 
-    const query = filter ? filterQuery(filter) : {
-      role:"worker"
-    }
-
+    const query = filter ? filterQuery(filter) : {}
+    query.role = "worker";
     const totalDocuments = await User.countDocuments(query);
-    if (!totalDocuments) throw new ApiError(404, "No Documents found");
-
+    if (!totalDocuments) throw new ApiError(404, "No Worker found");
+    console.log(query)
     const limit = perPage
     const skip = (page-1) *perPage
 
     const result = await User.find(query)
       .select(
-        "-password -refreshToken -email -phoneNo -jobPosted -jobDone -experienceYear -skills -isAvailable"
+        "-password -refreshToken -email -phoneNo -jobPosted -jobDone -experienceYear -isAvailable -jobApplied"
       )
       .sort({ [sortOption]: 1 }).skip(skip).limit(limit)
       .lean();
