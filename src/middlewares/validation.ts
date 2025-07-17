@@ -22,7 +22,7 @@ const registerWorker = Joi.object({
   skills: Joi.array().items(Joi.string()).unique().required(),
   gender: Joi.string().valid("male", "female", "others").required(),
     role: Joi.string().valid("worker").required(),
-  profilePicture:Joi.string().required()
+  profilePicture:Joi.string()
 });
 
 export const validateRegisterWorker = async (
