@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import Joi from "joi";
 
 const registerWorker = Joi.object({
-  fullname: Joi.string().min(4).max(30).required(),
+  fullName: Joi.string().min(4).max(30).required(),
   email: Joi.string()
     .email({ tlds: { allow: false } })
     .required(),
