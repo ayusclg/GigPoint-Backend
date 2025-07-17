@@ -41,6 +41,10 @@ const applicationSchema = new mongoose.Schema({
         type: Boolean,
         default:false,
     }
+
+
+}, {
+    timestamps:true,
 })
 
 export const Application = mongoose.model<Iapply>("Application",applicationSchema)
