@@ -41,20 +41,29 @@ export const validateRegisterWorker = async (
   }
 };
 
-// const jobPost = Joi.object({
-//   title: Joi.string().min(5).max(50).required(),
-//   description: Joi.string().min(5).max(100).required(),
-//   priceRange: Joi.object({
-//     initial: Joi.number().min(0).required().label("initialPrice"),
-//     final: Joi.number()
-//       .required()
-//       .min(Joi.ref("initialPrice"))
-//       .label("finalPrice"),
-//   }),
-//     skills: Joi.array().items(Joi.string()).unique().required(),
-//     priority: Joi.string().valid("low", "medium", "high").required(),
-//     createdBy: Joi.string().hex().length(24).required(),
-//     image:Joi.string()
-// });
+const jobPost = Joi.object({
+  title: Joi.string().min(5).max(50).required(),
+  description: Joi.string().min(5).max(100).required(),
+  priceRange: Joi.object({
+    initial: Joi.number().min(0).required().label("initialPrice"),
+    final: Joi.number()
+      .required()
+      .min(Joi.ref("initialPrice"))
+      .label("finalPrice"),
+  }),
+    skills: Joi.array().items(Joi.string()).unique().required(),
+    priority: Joi.string().valid("low", "medium", "high").required(),
+    createdBy: Joi.string().hex().length(24).required(),
+    image:Joi.string()
+});
 
-// export const validateJobPost 
+export const validateJobPost = async (req:Request,res:Response,next:NextFunction) => {
+    try {
+        await jobPost.validateAsync(req.body)
+        next()
+    } catch (error:any) {
+        res.status(400).json({
+            message:error.details[0].message || "Validation Error In Creating Post"
+        })
+    }
+}
