@@ -170,7 +170,7 @@ const viewAllApplication = asyncHandler(async (req: Request, res: Response): Pro
  
 
     if (userCheck.role !== "worker" ) {
-        allApplications = await Application.findOne({ jobId: req.params.id }).populate("appliedBy", "fullName email address phoneNo skills experienceYear ratings")   
+        allApplications = await Application.findOne({ jobId: req.params.id }).populate("appliedBy", "fullName email address phoneNo skills experienceYear ratings").sort()  
         if (!allApplications) throw new ApiError(404, "No applicants found")
       
     }
@@ -255,5 +255,7 @@ const searchJob = asyncHandler(async (req: Request, res: Response): Promise<void
     res.status(200).json(new ApiResponse(200,response,"Job Search Done"))
     
 })
+
+
 
 export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleApplication,viewMyApplications,searchJob}
