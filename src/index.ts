@@ -12,6 +12,7 @@ import passport from 'passport'
 import googleRoutes from './routes/gooleRoutes'
 import { swaggerDocs } from './config/swagger'
 import aiRoutes from './routes/aiRoute'
+import cors from 'cors'
 
 const port = process.env.PORT || 5000
 const host = '127.0.0.1'
@@ -26,6 +27,11 @@ app.get("/", (req:Request, res:Response):void => {
 
  
 //middlewares
+
+app.use(cors({
+    origin: "*",
+    credentials:true,
+}))
 passport.initialize()
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
