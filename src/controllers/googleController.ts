@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/AsyncHandler"
 import { Request, Response } from "express"
 import { Iuser } from "../models/userModel"
 import { ApiError } from "../utils/ApiError"
+import { ApiResponse } from "../utils/ApiRes"
 
 
 const googleCallback = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -18,6 +19,8 @@ const googleCallback = asyncHandler(async (req: Request, res: Response): Promise
         httpOnly: true,
         secure:false,
     })
+     res.redirect("http://localhost:5173/dashboard?message=UserCreated");
+     res.status(201).json(new ApiResponse(200,user,"User Logged In"))
 })
 
 export{googleCallback}

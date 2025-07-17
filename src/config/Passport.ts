@@ -8,7 +8,7 @@ passport.use(new Strategy
     ({
         clientID: process.env.CLIENT_ID || "",
       clientSecret: process.env.CLIENT_SECRET || "",
-      callbackURL: "http://localhost:3000/auth/google/callback",
+      callbackURL: "http://localhost:3000/api/v1/oauth/google/callback",
       passReqToCallback: true,
 },
         async (
@@ -29,7 +29,8 @@ passport.use(new Strategy
                     fullName: profile.displayName,
                     email: profile.emails?.[0]?.value || "",
                     profilePicture: profile.photos?.[0]?.value || "",
-                    role:"user"
+                    role:"user",
+                    gender:"male"
                 })
                 
             }
