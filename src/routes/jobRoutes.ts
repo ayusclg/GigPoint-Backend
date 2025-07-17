@@ -2,10 +2,11 @@ import express from 'express'
 import { verifyUser } from '../middlewares/auth'
 import { Upload } from '../middlewares/UploadImage'
 import { applyJob, approveJobApplication, createJob, deleteJob, getJobById, getMyJobs, getSingleApplication, searchJob, viewAllApplication,viewMyApplications } from '../controllers/jobController'
+import { validateJobPost } from '../utils/validation'
 
 const router = express.Router()
 
-router.route("/user/create").post(verifyUser, Upload.array("image"), createJob)
+router.route("/user/create").post(verifyUser, Upload.array("image"),validateJobPost, createJob)
 router.route("/user/get/jobs").get(verifyUser,getMyJobs)
 router.route("/get/:id").get(verifyUser, getJobById)
 router.route("/user/delete/:id").delete(verifyUser, deleteJob)

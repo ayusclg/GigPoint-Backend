@@ -2,6 +2,7 @@ import  express  from "express";
 import { Upload } from "../middlewares/UploadImage";
 import { getUserById, myProfile, workerLogin, userLogout, workerRegister, updateWorkerDetails, searchWorker } from "../controllers/userController";
 import { verifyUser } from "../middlewares/auth";
+import { validateRegisterWorker } from "../utils/validation";
 
 
 
@@ -15,7 +16,7 @@ const router = express.Router()
  */ 
 
 
-router.route("/create").post(Upload.single("profilePicture"), workerRegister)
+router.route("/create").post(Upload.single("profilePicture"),validateRegisterWorker, workerRegister)
 router.route("/login").post(workerLogin)
 router.route("/logout").post(verifyUser, userLogout)
 router.route("/getById/:id").get(verifyUser, getUserById)
