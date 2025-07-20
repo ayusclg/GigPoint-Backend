@@ -24,7 +24,7 @@ app.get("/", (req:Request, res:Response):void => {
     res.send("<h1>waving from gigpoint Backend</h1>")
 })
 
-
+//passportConfig
  import "./config/Passport";
 //middlewares
 
