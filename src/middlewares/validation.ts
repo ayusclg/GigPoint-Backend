@@ -65,3 +65,25 @@ export const validateJobPost = async (req:Request,res:Response,next:NextFunction
         })
     }
 }
+
+
+const passwordReset = Joi.object({
+  newPassword: Joi.string().pattern(
+    new RegExp(
+      "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+    )
+  )
+  .message(
+      "Password must be at least 8 characters long, include uppercase, lowercase, number, and special character"
+  )
+  .required()
+});
+
+export const passwordResetValidation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    await passwordReset.validateAsync(req.body)
+     next()
+  } catch (error:any) {
+    res.status(500).json({message:error.details[0].message || "Password Validation Failed"})
+  }
+}
