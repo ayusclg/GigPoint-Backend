@@ -20,6 +20,8 @@ export interface Iuser extends Document{
     jobApplied: mongoose.Types.ObjectId[]
     rating: mongoose.Types.ObjectId[];
     isAvailable: boolean;
+    resetOtp: string | undefined;
+    resetOtpExpiry: Date | undefined;
 }
 
 
@@ -90,7 +92,14 @@ const userSchema = new mongoose.Schema({
    isAvailable: {
        type: Boolean,
        default:true
-   }
+    },
+    resetOtp: {
+        type: String,
+        
+    },
+    resetOtpExpiry: {
+        type:Date,
+    }
 },
     {
     timestamps:true,

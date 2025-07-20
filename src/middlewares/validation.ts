@@ -21,9 +21,7 @@ const registerWorker = Joi.object({
   experienceYear: Joi.number().required().min(1),
   skills: Joi.array().items(Joi.string()).unique().required(),
   gender: Joi.string().valid("male", "female", "others").required(),
-    role: Joi.string().valid("worker").required(),
-
-});
+}).unknown(true);
 
 export const validateRegisterWorker = async (
   req: Request,
