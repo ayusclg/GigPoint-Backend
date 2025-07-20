@@ -9,7 +9,7 @@ import path from "path";
 import fs from "fs";
 import { sendMail } from "../services/Nodemailer";
 import { filterQuery } from "../middlewares/filterQuery";
-import { date } from "joi";
+
 
 const welcomeEmail = path.join(__dirname, "../templates/welcomeWorker.html");
 const welcome = fs.readFileSync(welcomeEmail, "utf-8");
@@ -268,14 +268,13 @@ const forgotPassword = asyncHandler(
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
     console.log(otp, "OTP", otpExpiry, "expiry");
 
-
     user.resetOtp = otp;
     user.resetOtpExpiry = otpExpiry;
-    await user.save()
+    await user.save();
     const html = passwordEmail
       .replace("{{username}}", user.fullName.split(" ")[0])
       .replace("{{otp}}", otp);
-                            
+
     const mailOptions = {
       to: user.email,
       subject: "GigPoint Password Reset",
