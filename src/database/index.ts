@@ -6,7 +6,8 @@ export const dbConnect = async () => {
      console.log('MongoDb Connected Successfully on:',mongoInstace.connection.host)
    } catch (error) {
        console.log("Error In MONGODB", error)
-       process.exit(1)
+     process.exit(1)
+  
        
    }
 }
