@@ -4,7 +4,7 @@
   "main": ".src/index.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon --watch \"src/**/*.ts\" --exec \"ts-node\" src/index.ts",
+    "dev": "nodemon  --legacy-watch --watch \"src/**/*.ts\" --exec \"ts-node\" src/index.ts",
     "start": "node dist/index.js",
     "prod": "node dist/index.js"
   },
