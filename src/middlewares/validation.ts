@@ -49,17 +49,16 @@ const jobPost = Joi.object({
       .min(Joi.ref("initialPrice"))
       .label("finalPrice"),
   }),
-    skills: Joi.array().items(Joi.string()).unique().required(),
-    priority: Joi.string().valid("low", "medium", "high").required(),
-    createdBy: Joi.string().hex().length(24).required(),
-    image:Joi.string()
+  skills: Joi.array().items(Joi.string()).unique().required(),
+  priority: Joi.string().valid("low", "medium", "high").required(),
+  createdBy: Joi.string().hex().length(24).required(),
+  image: Joi.string()
 });
-
 export const validateJobPost = async (req:Request,res:Response,next:NextFunction) => {
     try {
         await jobPost.validateAsync(req.body)
         next()
-    } catch (error:any) {
+      } catch (error:any) {
         res.status(400).json({
             message:error.details[0].message || "Validation Error In Creating Post"
         })
