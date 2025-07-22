@@ -25,6 +25,8 @@ app.get("/", (req:Request, res:Response):void => {
 })
 
 
+
+
  import "./config/Passport";
 //middlewares
 

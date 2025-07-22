@@ -1,6 +1,6 @@
 import express from "express"
 import passport from "passport"
-import { googleCallback } from "../controllers/googleController"
+import { googleCallback }  from "../controllers/googleController"
 
 
 const router = express.Router()

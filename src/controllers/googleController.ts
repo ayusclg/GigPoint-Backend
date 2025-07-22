@@ -20,7 +20,7 @@ const googleCallback = asyncHandler(
       secure: false,
     });
 
-    res.status(201).json(new ApiResponse(200, user, "User Logged In"));
+    res.redirect(`http://localhost:5173/oauth-handler?token=${accessToken}`);
   }
 );
 

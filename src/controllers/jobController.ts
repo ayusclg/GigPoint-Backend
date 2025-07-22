@@ -95,7 +95,7 @@ const applyJob = asyncHandler(async (req: Request, res: Response):Promise<void> 
       
         const skillsMatch = job.skills.some((sk: string) => user.skills.includes(sk))
         
-        if (!skillsMatch ) throw new ApiError(403, "Your Skills Dont Match")
+        if (!skillsMatch ) throw new ApiError(403, "Your Skills Don't Match")
         
          applyJob = await Application.create({
             jobId: job._id,
