@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
+import { createSchemaWithCommon, ICommon } from './commonModel';
 
-export interface Iapply extends mongoose.Document{
+export interface Iapply extends ICommon{
     jobId: mongoose.Types.ObjectId,
     appliedAt: Date;
     appliedBy: mongoose.Types.ObjectId,
