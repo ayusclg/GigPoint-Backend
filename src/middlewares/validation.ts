@@ -75,7 +75,11 @@ const passwordReset = Joi.object({
   .message(
       "Password must be at least 8 characters long, include uppercase, lowercase, number, and special character"
   )
-  .required()
+    .required(),
+  email:Joi.string()
+    .email({ tlds: { allow: false } })
+    .required(),
+  otp:Joi.string().length(6).required()
 });
 
 export const passwordResetValidation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
