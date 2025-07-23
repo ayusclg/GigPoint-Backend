@@ -1,0 +1,33 @@
+# Node dependencies
+node_modules
+npm-debug.log
+yarn.lock
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+logs
+*.out
+
+# Editor and system files
+.DS_Store
+*.swp
+*.swo
+*.idea
+.vscode
+
+# Git
+.git
+.gitignore
+
+# Docker files (if not needed inside container)
+Dockerfile*
+docker-compose*
+
+# Build output (e.g., for TypeScript or frontend)
+dist
+build
+coverage

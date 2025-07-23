@@ -1,0 +1,45 @@
+
+services:
+  backend:
+    build: .
+    container_name: "gigpoint-backend"
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:6
+    container_name: "mongo-container"
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    security_opt:
+      - seccomp:unconfined
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7
+    container_name: "redis-cache"
+    ports:
+      - "6379:6379"
+    security_opt:
+      - seccomp:unconfined
+    networks:
+      - app-network
+
+volumes:
+  mongo_data:
+
+networks:
+  app-network:

@@ -21,9 +21,7 @@ const registerWorker = Joi.object({
   experienceYear: Joi.number().required().min(1),
   skills: Joi.array().items(Joi.string()).unique().required(),
   gender: Joi.string().valid("male", "female", "others").required(),
-    role: Joi.string().valid("worker").required(),
-
-});
+}).unknown(true);
 
 export const validateRegisterWorker = async (
   req: Request,
@@ -51,19 +49,40 @@ const jobPost = Joi.object({
       .min(Joi.ref("initialPrice"))
       .label("finalPrice"),
   }),
-    skills: Joi.array().items(Joi.string()).unique().required(),
-    priority: Joi.string().valid("low", "medium", "high").required(),
-    createdBy: Joi.string().hex().length(24).required(),
-    image:Joi.string()
+  skills: Joi.array().items(Joi.string()).unique().required(),
+  priority: Joi.string().valid("low", "medium", "high").required(),
+  createdBy: Joi.string().hex().length(24).required(),
+  image: Joi.string()
 });
-
 export const validateJobPost = async (req:Request,res:Response,next:NextFunction) => {
     try {
         await jobPost.validateAsync(req.body)
         next()
-    } catch (error:any) {
+      } catch (error:any) {
         res.status(400).json({
             message:error.details[0].message || "Validation Error In Creating Post"
         })
     }
+}
+
+
+const passwordReset = Joi.object({
+  newPassword: Joi.string().pattern(
+    new RegExp(
+      "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+    )
+  )
+  .message(
+      "Password must be at least 8 characters long, include uppercase, lowercase, number, and special character"
+  )
+  .required()
+});
+
+export const passwordResetValidation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    await passwordReset.validateAsync(req.body)
+     next()
+  } catch (error:any) {
+    res.status(500).json({message:error.details[0].message || "Password Validation Failed"})
+  }
 }

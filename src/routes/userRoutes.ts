@@ -8,9 +8,12 @@ import {
   workerRegister,
   updateWorkerDetails,
   searchWorker,
+  forgotPassword,
+  verifyOtp,
+  resetPassword,
 } from "../controllers/userController";
 import { verifyUser } from "../middlewares/auth";
-import { validateRegisterWorker } from "../middlewares/validation";
+import { passwordResetValidation, validateRegisterWorker } from "../middlewares/validation";
 
 const router = express.Router();
 /**
@@ -35,5 +38,9 @@ router
   .route("/update")
   .put(verifyUser, Upload.single("profilePicture"), updateWorkerDetails);
 router.route("/search").post(verifyUser, searchWorker);
+
+router.route("/forgotPassword").post(verifyUser, forgotPassword)
+router.route("/verifyOtp").post(verifyUser, verifyOtp),
+  router.route("/resetPassword").post(verifyUser,passwordResetValidation,resetPassword)
 
 export default router;
