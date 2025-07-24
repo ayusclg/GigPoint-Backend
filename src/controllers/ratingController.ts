@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiRes";
 import { asyncHandler } from "../utils/AsyncHandler";
 import { Request, Response } from "express";
+import {isWorker} from '../utils/Rolecheck'
 
 const createRating = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -13,7 +14,7 @@ const createRating = asyncHandler(
       throw new ApiError(404, "You Cannot give Rating YourSelf");
 
     const ratedWorker = await User.findById(ratedUserId);
-    if (ratedWorker && ratedWorker.role !== "worker")
+    if (ratedWorker && !isWorker(ratedWorker) )
       throw new ApiError(403, "You can Only Rate Workers");
     const existingRating = await Rating.findOne({
       raterUserId: req.userId,

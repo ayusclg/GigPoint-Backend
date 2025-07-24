@@ -1,6 +1,6 @@
-import mongoose, { Mongoose } from "mongoose";
+import mongoose, { Document} from "mongoose";
 import jwt from 'jsonwebtoken'
-import { object } from "joi";
+
 
 export interface Iuser extends Document{
     googleId: string;
@@ -72,7 +72,7 @@ const userSchema = new mongoose.Schema({
     },
     skills: [{
         type: String,
-        enum:Object.values(skills),
+        enum:skills
     }],
     experienceYear: {
         type:Number,
