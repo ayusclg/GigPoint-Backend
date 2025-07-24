@@ -18,7 +18,7 @@ const approve = fs.readFileSync(approveEmail,'utf-8')
 
 const createJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const creator = await User.findById(req.userId)
-   if(!creator || creator.role === "worker") throw new ApiError(403,"Permission Denied")
+   if(!creator || creator.role === "worker") throw new ApiError(403,"Permission Denied") // here also same as below, PERMISSION_DENIED = "Permission Denied" and import that variable here
     
     const { title, description, priceRange, priority,skills } = req.body
     
@@ -40,10 +40,10 @@ const createJob = asyncHandler(async (req: Request, res: Response): Promise<void
         createdBy: creator._id,
         skills,
     })
-    if (!createdJob) throw new ApiError(400, "Error In Creating Job")
+    if (!createdJob) throw new ApiError(400, "Error In Creating Job") // same issue
     creator.jobPosted.push(createdJob._id as any)
     await creator.save()
-    res.status(201).json(new ApiResponse(201,createdJob,"Job Created Successfully"))
+    res.status(201).json(new ApiResponse(201,createdJob,"Job Created Successfully")) // here also
 
 })
 
@@ -53,7 +53,7 @@ const getJobById = asyncHandler(async (req: Request, res: Response): Promise<voi
     
     const jobId = req.params.id
     const job = await Job.findById(jobId)
-      .populate("createdBy", "fullName phoneNo address profilePicture")
+      .populate("createdBy", "fullName phoneNo address profilePicture") // specifically here where you need to populate by createdBy and in other API you too need here so use variables and change in 1 place can be use everywhere dont need to change in very file.
       .populate("assignedTo", "fullName address phoneNo")
       .lean();
     if (!job) throw new ApiError(404, "Job Not Found")
@@ -72,7 +72,7 @@ const deleteJob = asyncHandler(async (req: Request, res: Response): Promise<void
     if (!user) throw new ApiError(404, "User Not Found");
 
     const removedId = user.jobPosted.filter((id) => id.toString() !== jobId.toString())
-    console.log(removedId)
+    console.log(removedId) // dont use console.log code shouldnot contain debugging code. you can you logger
     user.jobPosted = removedId
     await user.save()
     res.status(200).json(new ApiResponse(200,(job.title),"job Deleted Successfully"))
@@ -89,9 +89,9 @@ const applyJob = asyncHandler(async (req: Request, res: Response):Promise<void> 
         const {estimatedPrice} =req.body
     const application = await Application.findOne({ jobId: job._id, appliedBy: req.userId })
     if(application) throw new ApiError(403,"Twice cant be Applied")
-   if(job.assignedTo) throw new ApiError(403,"Job Already Assigned")
+   if(job.assignedTo) throw new ApiError(403,"Job Already Assigned") // why are we creating multiple object of ApiError or ApiSuccess we must pass reusable object everywhere.
     let applyJob:Iapply;
-    if (user.role === "worker") {
+    if (user.role === "worker") { //see worker needs to be defined here as well.
       
         const skillsMatch = job.skills.some((sk: string) => user.skills.includes(sk))
         
@@ -143,7 +143,7 @@ const approveJobApplication = asyncHandler(async (req: Request, res: Response): 
     job.status = "assigned"
     job.finalPrice = application.estimatedPrice
     await job.save()
-    application.isAccepted = true; 
+    application.isAccepted = true; // can this 145, 146, 147 can be defined in a single line?
     await application.save(); 
     
     const workerId = application.appliedBy._id;
@@ -259,3 +259,8 @@ const searchJob = asyncHandler(async (req: Request, res: Response): Promise<void
 
 
 export{createJob,getJobById,deleteJob,approveJobApplication,applyJob,viewAllApplication,getMyJobs,getSingleApplication,viewMyApplications,searchJob}
+
+
+// dont use static thing in code, for example if "worker" needs to be defined at multiple place and
+//  if you incorrectedly type worker to wokrer thats a major bug so,
+//  always create a file constants.ts and define varibles like WOROKER_NAME = "worker" and also dont define http response code like 200 in code also use API_SUCCESS = 200, 404_NOT_FOUND = 202 etc
