@@ -1,5 +1,6 @@
 import mongoose, { Mongoose } from "mongoose";
 import jwt from 'jsonwebtoken'
+import { object } from "joi";
 
 export interface Iuser extends Document{
     googleId: string;
@@ -9,9 +10,9 @@ export interface Iuser extends Document{
     profilePicture?: string;
     phoneNo: string;
     address?: string;
-    skills: string[];
+    skills: skills[];
     experienceYear: number,
-    workDone: mongoose.Types.ObjectId[];
+    jobDone: mongoose.Types.ObjectId[];
     gender: "male" | "female" | "other";
     role: "user" | "worker" | "admin";
     generateRefreshToken(): string;
@@ -25,6 +26,16 @@ export interface Iuser extends Document{
 }
 
 
+enum skills{
+    Plumber="plumber",
+    Electrician="electrician",
+    Cleaner="cleaner",
+    Saloon="saloon",
+    Carpentry="carpentry",
+    Driver="driver",
+    HomeRenovation="homeRenovation",
+
+}
 const userSchema = new mongoose.Schema({
     googleId: {
         type:String
@@ -61,6 +72,7 @@ const userSchema = new mongoose.Schema({
     },
     skills: [{
         type: String,
+        enum:Object.values(skills),
     }],
     experienceYear: {
         type:Number,
