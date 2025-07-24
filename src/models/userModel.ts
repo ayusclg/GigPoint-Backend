@@ -2,6 +2,9 @@ import mongoose, { Mongoose } from "mongoose";
 import jwt from 'jsonwebtoken'
 import { object } from "joi";
 
+import { createSchemaWithCommon, ICommon } from './commonModel';
+
+
 export interface Iuser extends Document{
     googleId: string;
     fullName: string,
@@ -23,6 +26,7 @@ export interface Iuser extends Document{
     isAvailable: boolean;
     resetOtp: string | undefined;
     resetOtpExpiry: Date | undefined;
+    passwordChangedAt: Date;
 }
 
 
