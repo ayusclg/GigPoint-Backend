@@ -1,11 +1,10 @@
-import   { Redis } from 'ioredis'
+import { Redis } from "ioredis";
 
-export const redis = new Redis()
- 
+export const redis = new Redis();
 
 redis.on("connect", () => {
-    console.log("Redis Connection Started")
-})
+  console.log("Redis Connection Started");
+});
 redis.on("error", (err) => {
-    console.log("Redis Connection Failed",err)
-})
+  console.log("Redis Connection Failed", err);
+});
