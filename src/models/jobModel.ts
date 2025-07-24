@@ -3,7 +3,17 @@ import mongoose from "mongoose";
 export interface PriceRange {
     initial: number;
     end: number;
-  }
+}
+  
+enum category {
+  Plumber = "plumber",
+  Electrician = "electrician",
+  Cleaner = "cleaner",
+  Saloon = "saloon",
+  Carpentry = "carpentry",
+  Driver = "driver",
+  HomeRenovation = "homeRenovation",
+}
   
 export interface Ijob extends mongoose.Document{
     title: string;
@@ -17,6 +27,7 @@ export interface Ijob extends mongoose.Document{
     assignedTo: mongoose.Types.ObjectId;
     skills: string[];
     finalPrice: number;
+    category: category;
 }
 
 const priceRangeSchema = new mongoose.Schema<PriceRange>({
@@ -70,7 +81,11 @@ const jobSchema = new mongoose.Schema({
     skills: [{
         type: String,
         required:true,
-    }]
+    }],
+    category: {
+        type: String,
+        enum:Object.values(category)
+    }
 }, {
     timestamps:true,
 })
