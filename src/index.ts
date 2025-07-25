@@ -14,7 +14,7 @@ import { swaggerDocs } from './config/swagger'
 import aiRoutes from './routes/aiRoute'
 import cors from 'cors'
 import './utils/redisClient'
-
+import morgan from 'morgan'
 const port = process.env.PORT || 5000
 const host = '127.0.0.1'
 
@@ -27,6 +27,7 @@ app.get("/", (req:Request, res:Response):void => {
 
 //passportConfig
  import "./config/Passport";
+import { logger } from './Logger/log'
 //middlewares
 
 app.use(
@@ -39,6 +40,11 @@ passport.initialize()
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+app.use(morgan('combined', {
+    stream: {
+        write:(message) =>logger.http(message.trim())
+    }
+}))
 
 //routes
 app.use("/api/v1/auth", authRoutes)
