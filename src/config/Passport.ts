@@ -14,8 +14,7 @@ passport.use(
     {
       clientID: process.env.CLIENT_ID || "",
       clientSecret: process.env.CLIENT_SECRET || "",
-      callbackURL:
-        "https://gigpoint-backend.onrender.com/api/v1/oauth/google/callback",
+      callbackURL:process.env.CALLBACK_URL_PASSPORT,
       passReqToCallback: true,
     },
     async (
