@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+import { createSchemaWithCommon, ICommon } from './commonModel';
+
+
 export interface Irating extends mongoose.Document{
     raterUserId: mongoose.Types.ObjectId;
     ratedUserId: mongoose.Types.ObjectId;

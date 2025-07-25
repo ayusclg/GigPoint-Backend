@@ -25,6 +25,7 @@ const createJob = asyncHandler(
 
     const { title, description, priceRange, priority, skills } = req.body;
 
+
     let cloudUrl;
     if (req.files) {
       const jobImages = req.files as Express.Multer.File[];
@@ -32,6 +33,7 @@ const createJob = asyncHandler(
     }
 
     const createdJob = await Job.create({
+
       title,
       description,
       priceRange: {
@@ -60,8 +62,9 @@ const getJobById = asyncHandler(
     if (!user) throw new ApiError(403, "No User Found");
 
     const jobId = req.params.id;
+
     const job = await Job.findById(jobId)
-      .populate("createdBy", "fullName phoneNo address profilePicture")
+      .populate("createdBy", "fullName phoneNo address profilePicture") 
       .populate("assignedTo", "fullName address phoneNo")
       .lean();
     if (!job) throw new ApiError(404, "Job Not Found");
@@ -85,6 +88,7 @@ const deleteJob = asyncHandler(
 
     const user = await User.findById(req.userId);
     if (!user) throw new ApiError(404, "User Not Found");
+
 
     const removedId = user.jobPosted.filter(
       (id) => id.toString() !== jobId.toString()
@@ -138,6 +142,7 @@ const applyJob = asyncHandler(
       await job.save();
     } else {
       throw new ApiError(403, "Permission Denied");
+
     }
     const applyHtml = apply
       .replace("{{workerName}}", user.fullName)
@@ -182,7 +187,6 @@ const approveJobApplication = asyncHandler(
     await job.save();
     application.isAccepted = true;
     await application.save();
-
     const workerId = application.appliedBy._id;
     const worker = await User.findById(workerId);
     if (!worker) throw new ApiError(404, "Worker Not Found");

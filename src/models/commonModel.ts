@@ -9,11 +9,11 @@ export interface ICommon extends mongoose.Document {
 export const commonSchemaFields = {
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now // changedAt must be triggered when the object is created not everytime.
     },
     updatedAt: {
         type: Date,
-        default: Date.now
+        default: Date.now // updatedAt must be triggered when the object is changed not everytime.
     },
     deleted: {
         type: Boolean,

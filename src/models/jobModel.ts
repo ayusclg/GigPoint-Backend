@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { createSchemaWithCommon, ICommon } from './commonModel';
 
 export interface PriceRange {
     initial: number;
