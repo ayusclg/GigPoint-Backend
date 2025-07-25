@@ -9,6 +9,7 @@ import path from "path";
 import fs from "fs";
 import { sendMail } from "../services/Nodemailer";
 import { filterQuery } from "../middlewares/filterQuery";
+import { isWorker } from "../utils/Rolecheck";
 
 
 const welcomeEmail = path.join(__dirname, "../templates/welcomeWorker.html");
@@ -146,7 +147,7 @@ const getUserById = asyncHandler(
     const dbUser = await User.findById(user);
     if (!dbUser) throw new ApiError(404, "Requested User Not Found");
     let gotUser;
-    if (dbUser.role === "worker") {
+    if (isWorker(dbUser)) {
       gotUser = await User.findById(dbUser._id)
         .select("-password -refreshToken -googleId -jobPosted")
         .populate("jobDone", "ttile createdBy")
@@ -173,7 +174,7 @@ const myProfile = asyncHandler(
       throw new ApiError(404, "User Not Found");
     }
     let user;
-    userProfile.role === "worker"
+    isWorker(userProfile)
       ? (user = await User.findById(userProfile._id)
           .select("-password -refreshToken -googleId -jobPosted")
           .populate("jobDone", "ttile createdBy")
@@ -234,7 +235,7 @@ const searchWorker = asyncHandler(
     query.role = "worker";
     const totalDocuments = await User.countDocuments(query);
     if (!totalDocuments) throw new ApiError(404, "No Worker found");
-    console.log(query);
+    
     const limit = perPage;
     const skip = (page - 1) * perPage;
 
@@ -262,7 +263,7 @@ const forgotPassword = asyncHandler(
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) throw new ApiError(404, "User Not Found");
-    if (user.role !== "worker")
+    if (!isWorker(user))
       throw new ApiError(403, "You Cannot Change Your Password");
     const otp = Math.floor(Math.random() * 900000 + 100000).toString();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);

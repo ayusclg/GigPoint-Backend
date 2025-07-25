@@ -25,7 +25,7 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
         const user = await User.findById(decode._id).select("-password -refreshToken")
         if (!user) throw new ApiError(400, "User Not Found")
         
-        req.userId = user._id.toString()
+        req.userId = user._id?.toString() as string
         next()
     } catch (error) {
         if (error instanceof TokenExpiredError) {

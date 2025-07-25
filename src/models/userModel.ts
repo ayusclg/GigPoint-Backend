@@ -1,6 +1,6 @@
-import mongoose, { Mongoose } from "mongoose";
+import mongoose, { Document} from "mongoose";
 import jwt from 'jsonwebtoken'
-import { object } from "joi";
+
 
 import { createSchemaWithCommon, ICommon } from './commonModel';
 
@@ -76,7 +76,7 @@ const userSchema = new mongoose.Schema({
     },
     skills: [{
         type: String,
-        enum:Object.values(skills),
+        enum:skills
     }],
     experienceYear: {
         type:Number,

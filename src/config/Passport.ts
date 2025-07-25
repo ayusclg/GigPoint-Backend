@@ -39,7 +39,7 @@ passport.use(
             role: "user",
             gender: "male",
           });
-          console.log(profile.displayName);
+          
           const welcomeHtml = welcome.replace(
             "{{username}}",
             user.fullName.split(" ")[0]
