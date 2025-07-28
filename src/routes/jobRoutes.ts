@@ -12,6 +12,7 @@ import {
   searchJob,
   viewAllApplication,
   viewMyApplications,
+  recomendJob
 } from "../controllers/jobController";
 import { validateJobPost } from "../middlewares/validation";
 
@@ -29,5 +30,6 @@ router.route("/user/apply/view/:id").get(verifyUser, viewAllApplication);
 router.route("/get/application/:id").get(verifyUser, getSingleApplication);
 router.route("/worker/get/application").get(verifyUser, viewMyApplications);
 router.route("/searchJob").post(verifyUser, searchJob);
+router.route("/recomend").get(verifyUser,recomendJob)
 
 export default router;

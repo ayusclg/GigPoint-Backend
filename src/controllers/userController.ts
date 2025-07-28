@@ -43,13 +43,7 @@ const workerRegister = asyncHandler(
     const file = req.file as Express.Multer.File;
     const cloudUrl = await uploadImageOnCloud(file);
 
-    let experience;
-    if (experienceYear) {
-      const checkExperience = isNaN(experienceYear);
-      if (checkExperience) {
-        experience = Number(experienceYear);
-      }
-    }
+    
 
     const userCreate = await User.create({
       email,
@@ -58,7 +52,7 @@ const workerRegister = asyncHandler(
       password: hashedPw,
       profilePicture: cloudUrl,
       address,
-      experienceYear: experience,
+      experienceYear: Number(experienceYear),
       skills,
       role: role || "worker",
       gender,

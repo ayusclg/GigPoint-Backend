@@ -7,14 +7,16 @@ export interface PriceRange {
     end: number;
 }
   
-enum category {
-  Plumber = "plumber",
-  Electrician = "electrician",
-  Cleaner = "cleaner",
-  Saloon = "saloon",
-  Carpentry = "carpentry",
-  Driver = "driver",
-  HomeRenovation = "homeRenovation",
+
+enum category{
+    Plumber="plumber",
+    Electrician="electrician",
+    Cleaner="cleaner",
+    Saloon="saloon",
+    Carpentry="carpentry",
+    Driver="driver",
+    HomeRenovation="homeRenovation",
+
 }
   
 export interface Ijob extends mongoose.Document{
@@ -27,9 +29,8 @@ export interface Ijob extends mongoose.Document{
     status: "searching" | "assigned" | "completed";
     applications: mongoose.Types.ObjectId[];
     assignedTo: mongoose.Types.ObjectId;
-    skills: string[];
+    category:category;
     finalPrice: number;
-    category: category;
     address: string;
 }
 
@@ -81,13 +82,9 @@ const jobSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref:"Application"
     }],
-    skills: [{
-        type: String,
-        required:true,
-    }],
     category: {
         type: String,
-        enum:Object.values(category)
+        enum:category
     },
     address: {
         type: String,

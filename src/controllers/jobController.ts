@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/AsyncHandler";
 import { Request, Response } from "express";
 import { uploadImageOnCloud } from "../middlewares/UploadImage";
-import { Job } from "../models/jobModel";
+import { Ijob, Job } from "../models/jobModel";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiRes";
 import { Iuser, User } from "../models/userModel";
@@ -10,6 +10,8 @@ import path from "path";
 import fs from "fs";
 import { sendMail } from "../services/Nodemailer";
 import { isWorker } from "../utils/Rolecheck";
+import { logger } from "../Logger";
+import mongoose from "mongoose";
 
 const applyEmail = path.join(__dirname, "../templates/jobApply.html");
 const apply = fs.readFileSync(applyEmail, "utf-8");
@@ -20,11 +22,11 @@ const approve = fs.readFileSync(approveEmail, "utf-8");
 const createJob = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const creator = await User.findById(req.userId);
-    if ( !creator || isWorker(creator))
+    if (!creator || isWorker(creator))
       throw new ApiError(403, "Permission Denied");
 
-    const { title, description, priceRange, priority, skills ,address} = req.body;
-
+    const { title, description, priceRange, priority, category, address } =
+      req.body;
 
     let cloudUrl;
     if (req.files) {
@@ -33,7 +35,6 @@ const createJob = asyncHandler(
     }
 
     const createdJob = await Job.create({
-
       title,
       description,
       priceRange: {
@@ -45,7 +46,7 @@ const createJob = asyncHandler(
       priority,
       image: cloudUrl,
       createdBy: creator._id,
-      skills,
+      category,
       address,
     });
     if (!createdJob) throw new ApiError(400, "Error In Creating Job");
@@ -65,7 +66,7 @@ const getJobById = asyncHandler(
     const jobId = req.params.id;
 
     const job = await Job.findById(jobId)
-      .populate("createdBy", "fullName phoneNo address profilePicture") 
+      .populate("createdBy", "fullName phoneNo address profilePicture")
       .populate("assignedTo", "fullName address phoneNo")
       .lean();
     if (!job) throw new ApiError(404, "Job Not Found");
@@ -90,11 +91,10 @@ const deleteJob = asyncHandler(
     const user = await User.findById(req.userId);
     if (!user) throw new ApiError(404, "User Not Found");
 
-
     const removedId = user.jobPosted.filter(
       (id) => id.toString() !== jobId.toString()
     );
-   
+
     user.jobPosted = removedId;
     await user.save();
     res
@@ -124,12 +124,10 @@ const applyJob = asyncHandler(
     if (job.assignedTo) throw new ApiError(403, "Job Already Assigned");
     let applyJob: Iapply;
     if (isWorker(user)) {
-      const skillsMatch = job.skills.some((sk:any) =>
-        user.skills.includes(sk)
-      );
-
-      if (!skillsMatch) throw new ApiError(403, "Your Skills Dont Match");
-
+      const skillsMatch = user.skills.includes(job.category as any);
+      if (!skillsMatch) {
+        throw new ApiError(403, "Your Skills Dont Match");
+      }
       applyJob = await Application.create({
         jobId: job._id,
         appliedBy: req.userId,
@@ -143,7 +141,6 @@ const applyJob = asyncHandler(
       await job.save();
     } else {
       throw new ApiError(403, "Permission Denied");
-
     }
     const applyHtml = apply
       .replace("{{workerName}}", user.fullName)
@@ -280,7 +277,7 @@ const viewMyApplications = asyncHandler(
     const sortOption = (req.query.sortOption as string) || "status";
 
     const userCheck = await User.findById(req.userId);
-    if (!userCheck || !isWorker(userCheck) )
+    if (!userCheck || !isWorker(userCheck))
       throw new ApiError(403, "User Have No Permission");
 
     const totalApplications = await Application.countDocuments({
@@ -294,7 +291,7 @@ const viewMyApplications = asyncHandler(
       .sort({ [sortOption]: 1 })
       .skip(skip)
       .limit(perPage)
-      .populate("jobId", "title skills ")
+      .populate("jobId", "title category ")
       .lean();
     if (myApplications == null)
       throw new ApiError(404, "No Applications Found");
@@ -332,7 +329,7 @@ const searchJob = asyncHandler(
     const skip = (page - 1) * perPage;
     const result = await Job.find(query)
       .sort({ [sortOption]: 1 })
-      .select("-skills  -assignedTo -applications -finalPrice")
+      .select("-category  -assignedTo -applications -finalPrice")
       .skip(skip)
       .limit(perPage)
       .lean();
@@ -347,6 +344,50 @@ const searchJob = asyncHandler(
   }
 );
 
+const recomendJob = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const worker = await User.findById(req.userId);
+    if (!worker || !isWorker(worker)) {
+      throw new ApiError(403, "Permission Denied");
+    }
+
+    const foundJobs = await Job.find({
+      category: { $in: worker.skills },
+    });
+    console.log(foundJobs)
+
+    const recommendedJobs = foundJobs.filter((jobs)=>jobs.address.toLowerCase() === worker?.address?.toLowerCase())
+    console.log(recommendedJobs)
+    const forExperienced: Ijob[] = [];
+    const forBelowExperienced:Ijob[] = [];
+
+    for (const job of recommendedJobs) {
+      const isBelowExperienced:Boolean = worker.experienceYear < 5;
+      const isLowOrMediumPriority =
+        job.priority === "low" || job.priority === "medium";
+
+      if (isBelowExperienced && isLowOrMediumPriority) {
+        forBelowExperienced.push(job );
+       
+      } else {
+        forExperienced.push(job );
+      }
+    }
+  
+
+    if (worker.experienceYear < 5) {
+      res
+        .status(200)
+        .json(new ApiResponse(200, forBelowExperienced, "Jobs Recommended"));
+    } else {
+      res
+        .status(200)
+        .json(new ApiResponse(200, forExperienced, "Jobs Recommended"));
+    }
+  }
+);
+
+
 export {
   createJob,
   getJobById,
@@ -358,4 +399,5 @@ export {
   getSingleApplication,
   viewMyApplications,
   searchJob,
+  recomendJob,
 };
