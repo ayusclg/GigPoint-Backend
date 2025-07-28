@@ -102,11 +102,15 @@ const workerLogin = asyncHandler(
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
+      secure: true,
+      sameSite: "none",
+      path:"./api"
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
+      secure: true,
+      sameSite: "none",
+      path:"./api"
     });
     res
       .status(200)
