@@ -11,6 +11,10 @@ const googleCallback = asyncHandler(
     const refreshToken = user.generateRefreshToken();
     const accessToken = user.generateAccessToken();
 
+    const options = {
+      httpOnly: true,
+      seure:false,
+    }
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: false,
