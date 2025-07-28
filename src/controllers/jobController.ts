@@ -23,7 +23,7 @@ const createJob = asyncHandler(
     if ( !creator || isWorker(creator))
       throw new ApiError(403, "Permission Denied");
 
-    const { title, description, priceRange, priority, skills } = req.body;
+    const { title, description, priceRange, priority, skills ,address} = req.body;
 
 
     let cloudUrl;
@@ -46,6 +46,7 @@ const createJob = asyncHandler(
       image: cloudUrl,
       createdBy: creator._id,
       skills,
+      address,
     });
     if (!createdJob) throw new ApiError(400, "Error In Creating Job");
     creator.jobPosted.push(createdJob._id as any);

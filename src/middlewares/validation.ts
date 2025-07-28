@@ -50,7 +50,8 @@ const jobPost = Joi.object({
   }),
   skills: Joi.array().items(Joi.string()).unique().required(),
   priority: Joi.string().valid("low", "medium", "high").required(),
-  image: Joi.string()
+  image: Joi.string(),
+  address:Joi.string().required()
 });
 export const validateJobPost = async (req:Request,res:Response,next:NextFunction) => {
     try {
