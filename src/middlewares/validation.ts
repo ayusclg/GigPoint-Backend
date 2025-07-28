@@ -48,7 +48,7 @@ const jobPost = Joi.object({
       .required()
       .label("finalPrice"),
   }),
-  skills: Joi.array().items(Joi.string()).unique().required(),
+  category:Joi.string().required(),
   priority: Joi.string().valid("low", "medium", "high").required(),
   image: Joi.string(),
   address:Joi.string().required()
