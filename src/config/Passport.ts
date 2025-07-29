@@ -37,6 +37,7 @@ passport.use(
             profilePicture: profile.photos?.[0]?.value || "",
             role: "user",
             gender: "male",
+            phoneNo:9876676768
           });
           
           const welcomeHtml = welcome.replace(
