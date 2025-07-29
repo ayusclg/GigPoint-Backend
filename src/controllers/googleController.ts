@@ -17,11 +17,15 @@ const googleCallback = asyncHandler(
     }
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
+      secure: true,
+      path: "./api",
+      sameSite:"none"
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
+      secure: true,
+      sameSite: "none",
+      path:"./api"
     });
 
     res.status(201).json(new ApiResponse(200, user, "User Logged In"));
