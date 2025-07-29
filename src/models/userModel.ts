@@ -69,7 +69,8 @@ const userSchema = new mongoose.Schema({
     phoneNo: {
         type: String,
         unique: true,
-          match: /^[0-9]{10}$/
+        match: /^[0-9]{10}$/,
+          sparse:true,
     },
     address: {
         type: String,
