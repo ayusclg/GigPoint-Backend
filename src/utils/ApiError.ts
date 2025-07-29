@@ -1,8 +1,7 @@
 class ApiError extends Error{
     statusCode: number;
     success: boolean;
-    stack?: string; // error and sucess response must be same implement the same as ApiRes.ts and also naming for error and sucess is not correct use APIError.ts and APISuccess.ts
-    
+    stack?: string; 
     constructor(
         statusCode:number,
         message:string = "Something Went Wrong",
