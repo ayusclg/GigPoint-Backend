@@ -128,11 +128,15 @@ const userLogout = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: false,
+      secure: true,
+      sameSite: "none",
+      path:"./api"
     });
     res.clearCookie("accessToken", {
       httpOnly: true,
-      secure: false,
+      secure: true,
+      sameSite: "none",
+      path:"./api"
     });
     res.status(200).json(new ApiResponse(200, " ", "User logged Out"));
   }
