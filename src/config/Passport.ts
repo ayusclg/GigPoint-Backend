@@ -36,8 +36,7 @@ passport.use(
             email: profile.emails?.[0]?.value || "",
             profilePicture: profile.photos?.[0]?.value || "",
             role: "user",
-            gender: "male",
-            phoneNo:9876676768
+            gender: "male", 
           });
           
           const welcomeHtml = welcome.replace(
