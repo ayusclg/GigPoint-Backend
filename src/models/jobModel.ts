@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { createSchemaWithCommon, ICommon } from './commonModel';
-import { required } from "joi";
+
 
 export interface PriceRange {
     initial: number;
@@ -84,7 +84,7 @@ const jobSchema = new mongoose.Schema({
     }],
     category: {
         type: String,
-        enum:category
+        enum:Object.values(category)
     },
     address: {
         type: String,

@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import { createSchemaWithCommon, ICommon } from './commonModel';
 
 
+
 export interface Iuser extends Document{
     googleId: string;
     fullName: string,
@@ -67,17 +68,17 @@ const userSchema = new mongoose.Schema({
         required:true
     },
     phoneNo: {
-        type: String,
+        type: String, 
+        match: /^[0-9]{10}$/, 
         unique: true,
-        match: /^[0-9]{10}$/,
-          sparse:true,
+        sparse:true,
     },
     address: {
         type: String,
     },
     skills: [{
         type: String,
-        enum:skills
+        enum:Object.values(skills)
     }],
     experienceYear: {
         type:Number,
@@ -122,6 +123,7 @@ const userSchema = new mongoose.Schema({
     timestamps:true,
     }
 )
+ 
 
 userSchema.methods.generateRefreshToken = function () {
     return jwt.sign({

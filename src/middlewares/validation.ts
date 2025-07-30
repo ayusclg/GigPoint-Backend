@@ -89,3 +89,7 @@ export const passwordResetValidation = async (req: Request, res: Response, next:
     res.status(500).json({message:error.details[0].message || "Password Validation Failed"})
   }
 }
+
+
+const testValidation = Joi.object({
+})
