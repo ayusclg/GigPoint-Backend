@@ -28,7 +28,7 @@ const googleCallback = asyncHandler(
       path:"./api"
     });
 
-    res.status(201).json(new ApiResponse(200, user, "User Logged In"));
+    res.redirect("http://localhost:5173/Dashboard")
   }
 );
 
