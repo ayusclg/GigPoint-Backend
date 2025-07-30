@@ -203,12 +203,15 @@ const updateWorkerDetails = asyncHandler(
       if (!Array.isArray(skills))
         throw new ApiError(400, "Skills Must Be Array");
     }
-    const checkPassword = await bcrypt.compare(
-      currentPassword,
-      user.password as string
-    );
-    if (!checkPassword)
-      throw new ApiError(403, "Please Enter Correct Current Password");
+    if (currentPassword) {
+      const checkPassword = await bcrypt.compare(
+        currentPassword,
+        user.password as string
+      );
+      if (!checkPassword)
+        throw new ApiError(403, "Please Enter Correct Current Password");
+    }
+   
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     let cloudUrl;
