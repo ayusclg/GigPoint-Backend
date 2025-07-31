@@ -211,9 +211,10 @@ const updateWorkerDetails = asyncHandler(
       if (!checkPassword)
         throw new ApiError(403, "Please Enter Correct Current Password");
     }
+    let hashedPassword;
    if(newPassword)
    {   
-     const hashedPassword = await bcrypt.hash(newPassword, 10);
+     hashedPassword = await bcrypt.hash(newPassword, 10);
    }
     let cloudUrl;
     if (req.file) {
