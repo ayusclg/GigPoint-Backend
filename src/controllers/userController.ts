@@ -348,6 +348,27 @@ const resetPassword = asyncHandler(
   }
 );
 
+const makeAvailable = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const {isAvailable} = req.body
+  const user = await User.findById(req.userId)
+  if (!user || !isWorker(user)) throw new ApiError(403, "You Are Not Allowed")
+  user.isAvailable = isAvailable
+  await user.save()
+  res.status(200).json(new ApiResponse(200, user, "User Availability Changed"))
+  
+  
+})
+
+const addUserAddress = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { address } = req.body
+  const user = await User.findById(req.userId)
+  if (!user || isWorker(user)) throw new ApiError(403, "Permission Denied")
+  user.address = address
+  await user.save()
+
+  res.status(200).json(new ApiResponse(200,user,"User Address Added"))
+})
+
 export {
   workerRegister,
   workerLogin,
@@ -359,4 +380,6 @@ export {
   forgotPassword,
   resetPassword,
   verifyOtp,
+  makeAvailable,
+  addUserAddress
 };

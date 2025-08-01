@@ -387,6 +387,14 @@ const recomendJob = asyncHandler(
   }
 );
 
+const recomendWorkerNearby = asyncHandler(async (req: Request, res: Response):Promise<void> => {
+  const user = await User.findById(req.userId)
+  if (!user || !isWorker(user)) throw new ApiError(403, "You Are Not Allowed")
+  
+  
+  
+})
+
 
 export {
   createJob,
