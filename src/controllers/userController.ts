@@ -10,6 +10,8 @@ import fs from "fs";
 import { sendMail } from "../services/Nodemailer";
 import { filterQuery } from "../middlewares/filterQuery";
 import { isWorker } from "../utils/Rolecheck";
+import { Job } from "../models/jobModel";
+import { Application } from "../models/applicationModel";
 
 
 const welcomeEmail = path.join(__dirname, "../templates/welcomeWorker.html");
@@ -149,22 +151,33 @@ const getUserById = asyncHandler(
     const dbUser = await User.findById(user);
     if (!dbUser) throw new ApiError(404, "Requested User Not Found");
     let gotUser;
+    let response:Record<string,any>={}
     if (isWorker(dbUser)) {
       gotUser = await User.findById(dbUser._id)
         .select("-password -refreshToken -googleId -jobPosted")
         .populate("jobDone", "ttile createdBy")
         .populate("rating", "point comment");
+      
+      const totalJobsDone = await Job.countDocuments({ assignedTo: dbUser._id })
+      const totalJobApplied = await Application.countDocuments({ appliedBy: dbUser._id })
+      response["JobsDone"] = totalJobsDone || 0
+      response["JobsApplied"] = totalJobApplied || 0
+      response["Worker"] = gotUser
     } else {
       gotUser = await User.findById(dbUser._id)
         .select(
           "-password -skills -experienceYear -jobDone -googleId -refreshToken -isAvailable"
         )
         .populate("jobPosted", "title description status");
+      
+      const totalJobsPosted = await Job.countDocuments({ createdBy: dbUser._id })
+      response["JobPosted"] = totalJobsPosted ||0
+      response["User"]=gotUser
     }
     res
       .status(200)
       .json(
-        new ApiResponse(200, gotUser, `${dbUser.role} Fetched Successfully`)
+        new ApiResponse(200, response, `${dbUser.role} Fetched Successfully`)
       );
   }
 );
@@ -176,20 +189,33 @@ const myProfile = asyncHandler(
       throw new ApiError(404, "User Not Found");
     }
     let user;
-    isWorker(userProfile)
-      ? (user = await User.findById(userProfile._id)
-          .select("-password -refreshToken -googleId -jobPosted")
-          .populate("jobDone", "ttile createdBy")
-          .populate("rating", "point comment"))
-      : (user = await User.findById(userProfile._id)
+    let response:Record<string,any>={}
+    if(isWorker(userProfile)){
+       (user = await User.findById(userProfile._id)
+        .select("-password -refreshToken -googleId -jobPosted")
+        .populate("jobDone", "ttile createdBy")
+        .populate("rating", "point comment"));
+      
+       const totalJobsDone = await Job.countDocuments({ assignedTo: userProfile._id })
+      const totalJobApplied = await Application.countDocuments({ appliedBy: userProfile._id })
+      response["JobsDone"] = totalJobsDone || 0
+      response["JobsApplied"] = totalJobApplied || 0
+      response["Worker"] = user
+    }
+     else {
+  (user = await User.findById(userProfile._id)
           .select(
             "-password -skills -experienceYear -jobDone -googleId -refreshToken -isAvailable"
           )
-          .populate("jobPosted", "title description status"));
-
+    .populate("jobPosted", "title description status"));
+       const totalJobsPosted = await Job.countDocuments({ createdBy: userProfile._id });
+       response["JobPosted"] = totalJobsPosted || 0;
+       response["User"] = user;
+    }
+    
     res
       .status(200)
-      .json(new ApiResponse(200, user, "User Fetched Successfully"));
+      .json(new ApiResponse(200,response, "User Fetched Successfully"));
   }
 );
 
