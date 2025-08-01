@@ -11,6 +11,8 @@ import {
   forgotPassword,
   verifyOtp,
   resetPassword,
+  makeAvailable,
+  addUserAddress,
 } from "../controllers/userController";
 import { verifyUser } from "../middlewares/auth";
 import {
@@ -42,10 +44,11 @@ router
   .put(verifyUser, Upload.single("profilePicture"), updateWorkerDetails);
 router.route("/search").post(verifyUser, searchWorker);
 
-router.route("/forgotPassword").post( forgotPassword);
-router.route("/verifyOtp").post( verifyOtp),
-  router
-    .route("/resetPassword")
-    .post( passwordResetValidation, resetPassword);
+router.route("/forgotPassword").post(forgotPassword);
+router.route("/verifyOtp").post(verifyOtp),
+  router.route("/resetPassword").post(passwordResetValidation, resetPassword);
+
+router.route("/available").post(verifyUser, makeAvailable)
+router.route("/uAddress").post(verifyUser,addUserAddress)  
 
 export default router;
