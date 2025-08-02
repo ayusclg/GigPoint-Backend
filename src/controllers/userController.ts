@@ -1,4 +1,4 @@
-import { User } from "../models/userModel";
+import { Iuser, User } from "../models/userModel";
 import { asyncHandler } from "../utils/AsyncHandler";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
@@ -12,6 +12,7 @@ import { filterQuery } from "../middlewares/filterQuery";
 import { isWorker } from "../utils/Rolecheck";
 import { Job } from "../models/jobModel";
 import { Application } from "../models/applicationModel";
+import { logger } from "../Logger";
 
 
 const welcomeEmail = path.join(__dirname, "../templates/welcomeWorker.html");
@@ -184,12 +185,20 @@ const getUserById = asyncHandler(
 
 const myProfile = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const userProfile = await User.findById(req.userId);
+    const userProfile  = await User.findById(req.userId);
     if (!userProfile) {
       throw new ApiError(404, "User Not Found");
     }
     let user;
-    let response:Record<string,any>={}
+    let response: Record<string, any> = {}
+
+    const joinedTimeISO = new Date(userProfile.createdAt);
+    const joinedLocalFormat = joinedTimeISO.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",   
+      day: "numeric",
+    });  
+        response["JoinedOn"] = joinedLocalFormat || "";
     if(isWorker(userProfile)){
        (user = await User.findById(userProfile._id)
         .select("-password -refreshToken -googleId -jobPosted")
@@ -198,6 +207,8 @@ const myProfile = asyncHandler(
       
        const totalJobsDone = await Job.countDocuments({ assignedTo: userProfile._id })
       const totalJobApplied = await Application.countDocuments({ appliedBy: userProfile._id })
+      
+      
       response["JobsDone"] = totalJobsDone || 0
       response["JobsApplied"] = totalJobApplied || 0
       response["Worker"] = user
@@ -209,7 +220,7 @@ const myProfile = asyncHandler(
           )
     .populate("jobPosted", "title description status"));
        const totalJobsPosted = await Job.countDocuments({ createdBy: userProfile._id });
-       response["JobPosted"] = totalJobsPosted || 0;
+      response["JobPosted"] = totalJobsPosted || 0;
        response["User"] = user;
     }
     

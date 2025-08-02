@@ -28,6 +28,8 @@ export interface Iuser extends Document{
     resetOtp: string | undefined;
     resetOtpExpiry: Date | undefined;
     passwordChangedAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 
