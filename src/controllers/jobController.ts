@@ -389,8 +389,18 @@ const recomendJob = asyncHandler(
 
 const recomendWorkerNearby = asyncHandler(async (req: Request, res: Response):Promise<void> => {
   const user = await User.findById(req.userId)
-  if (!user || !isWorker(user)) throw new ApiError(403, "You Are Not Allowed")
+  if (!user || isWorker(user)) throw new ApiError(403, "You Are Not Allowed")
   
+  const userAddress = user.address 
+  const findWorker = await User.find({
+    address: userAddress,
+    role:"worker"
+   }).select("-password -jobDone -jobApplied -jobPosted -gender -email -resetOtp -resetOtpExpiry -experienceYear -isAvailable -phoneNo -createdAt -updatedAt")
+  if (!findWorker) {
+    throw new ApiError(404,"No Workers Found")
+  }
+  res.status(200).json(new ApiResponse(200,findWorker,"Worker Fetched Successfully Of Your Location"))
+
   
   
 })
@@ -408,4 +418,5 @@ export {
   viewMyApplications,
   searchJob,
   recomendJob,
+  recomendWorkerNearby
 };
