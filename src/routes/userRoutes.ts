@@ -13,6 +13,7 @@ import {
   resetPassword,
   makeAvailable,
   addUserAddress,
+  workerReports,
 } from "../controllers/userController";
 import { verifyUser } from "../middlewares/auth";
 import {
@@ -49,6 +50,7 @@ router.route("/verifyOtp").post(verifyOtp),
   router.route("/resetPassword").post(passwordResetValidation, resetPassword);
 
 router.route("/available").post(verifyUser, makeAvailable)
-router.route("/uAddress").post(verifyUser,addUserAddress)  
+router.route("/uAddress").post(verifyUser, addUserAddress)  
+router.route("/workerReports").get(verifyUser,workerReports)
 
 export default router;

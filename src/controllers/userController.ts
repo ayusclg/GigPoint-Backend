@@ -13,6 +13,7 @@ import { isWorker } from "../utils/Rolecheck";
 import { Job } from "../models/jobModel";
 import { Application } from "../models/applicationModel";
 import { logger } from "../Logger";
+import mongoose from "mongoose";
 
 
 const welcomeEmail = path.join(__dirname, "../templates/welcomeWorker.html");
@@ -404,6 +405,31 @@ const addUserAddress = asyncHandler(async (req: Request, res: Response): Promise
   await user.save()
 
   res.status(200).json(new ApiResponse(200,user,"User Address Added"))
+})  
+
+const workerReports = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const user = await User.findById(req.userId)
+  if (!user || !isWorker(user)) throw new ApiError(403, "You Are Not Allowed")
+  
+  const data = await Job.aggregate([
+    {
+      $match: {
+        assignedTo: new mongoose.Types.ObjectId(req.userId)
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalEarning: { $sum: "$finalPrice" }
+      }
+    }
+  ])
+  const totalEarning = data[0]?.totalEarning || 0
+  const response = {
+    totalEarning,
+
+  }
+  res.status(200).json(new ApiResponse(200,response,"Worker Reports Fetched Successfully"))
 })
 
 export {
@@ -418,5 +444,6 @@ export {
   resetPassword,
   verifyOtp,
   makeAvailable,
-  addUserAddress
+  addUserAddress,
+  workerReports
 };
