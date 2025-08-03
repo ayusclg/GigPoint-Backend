@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiRes";
 import { asyncHandler } from "../utils/AsyncHandler";
 import { Request, Response } from "express";
 import {isWorker} from '../utils/Rolecheck'
+import { logger } from "../Logger";
 
 const createRating = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -103,4 +104,36 @@ const deleteRating = asyncHandler(
   }
 );
 
-export { createRating, myRating, deleteRating };
+const showRecentRating = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const user = await User.findById(req.userId)
+  if (!user || !isWorker(user)) throw new ApiError(403, "Permission Denied")
+  
+  const displayRatings = await Rating.find({ ratedUserId: user._id }).sort({ createdAt: "asc" }).limit(4).select("-ratedUserId").lean()
+  if (!displayRatings) throw new ApiError(404, "No Ratings Found")
+  
+  res.status(200).json(new ApiResponse(200, displayRatings, "Ratings Fetched Successfully"))
+  
+  
+})
+
+const viewAllRating = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+
+  const page = parseInt(req.query.page as string) || 1
+  const perPage = parseInt(req.query.perPage as string) ||5
+  
+  const user = await User.findById(req.userId)
+  if (!user) throw new ApiError(403, "Permission Denied")
+  let query:Record<string,any> ={}
+  if (user.role === "user") {
+    query["raterUserId"]= req.userId
+  }
+  else {
+    query["ratedUserId"]=req.userId
+  }
+  logger.info(query)
+  const allRatings = await Rating.find(query).limit(perPage).skip((page-1)*perPage).sort({createdAt:"asc"}).lean()
+  if (!allRatings) throw new ApiError(404, "No Ratings Found")
+  
+  res.status(200).json(new ApiResponse(200,allRatings,"Ratings Fetched"))
+})
+export { createRating, myRating, deleteRating,showRecentRating,viewAllRating };
