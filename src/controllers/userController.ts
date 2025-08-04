@@ -201,10 +201,11 @@ const myProfile = asyncHandler(
     });  
         response["JoinedOn"] = joinedLocalFormat || "";
     if(isWorker(userProfile)){
-       (user = await User.findById(userProfile._id)
-        .select("-password -refreshToken -googleId -jobPosted")
+      (user = await User.findById(userProfile._id)
+        .select("-password -refreshToken -googleId -jobPosted -resetOtp -resetOtpExpiry ")
         .populate("jobDone", "ttile createdBy")
         .populate("rating", "point comment"));
+
       
        const totalJobsDone = await Job.countDocuments({ assignedTo: userProfile._id })
       const totalJobApplied = await Application.countDocuments({ appliedBy: userProfile._id })
@@ -213,6 +214,7 @@ const myProfile = asyncHandler(
       response["JobsDone"] = totalJobsDone || 0
       response["JobsApplied"] = totalJobApplied || 0
       response["Worker"] = user
+    
     }
      else {
   (user = await User.findById(userProfile._id)
