@@ -10,11 +10,7 @@ const googleCallback = asyncHandler(
     if (!user) throw new ApiError(403, "Permission Denied");
     const refreshToken = user.generateRefreshToken();
     const accessToken = user.generateAccessToken();
-
-    const options = {
-      httpOnly: true,
-      seure:false,
-    }
+ 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: true,
