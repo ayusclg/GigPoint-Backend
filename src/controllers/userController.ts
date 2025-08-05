@@ -107,12 +107,14 @@ const workerLogin = asyncHandler(
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "none" 
+      sameSite: "none" ,
+      path:"/api"
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "none" 
+      sameSite: "none" ,
+      path:"/api"
     });
     res
       .status(200)
@@ -131,12 +133,14 @@ const userLogout = asyncHandler(
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: true,
-      sameSite: "none" 
+      sameSite: "none" ,
+      path:"/api"
     });
     res.clearCookie("accessToken", {
       httpOnly: true,
       secure: true,
-      sameSite: "none" 
+      sameSite: "none" ,
+      path:"/api"
     });
     res.status(200).json(new ApiResponse(200, " ", "User logged Out"));
   }
