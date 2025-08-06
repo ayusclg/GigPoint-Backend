@@ -4,6 +4,6 @@ import { getAI } from '../AI/gemini'
 
 const router = express.Router()
 
-router.route("/myBot").post(verifyUser,getAI)
+router.route("/myBot").post(getAI)
 
 export default router
