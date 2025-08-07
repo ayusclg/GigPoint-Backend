@@ -44,29 +44,15 @@ const myRating = asyncHandler(
     const perPage = parseInt(req.query.perPage as string) || 5;
 
     const rating = await Rating.find({
-      $or: [
-        {
-          raterUserId: req.userId,
-        },
-        {
-          ratedUserId: req.userId,
-        },
-      ],
+      raterUserId:req.userId
     })
-      .populate("raterUserId", "fullName")
-      .populate("ratedUserId", "fullName phoneNo")
+      .populate("raterUserId", "fullName profilePicture")
+      .populate("ratedUserId", "fullName phoneNo profilePicture")
       .limit(perPage)
       .skip((page - 1) * perPage)
       .lean();
     const total = await Rating.countDocuments({
-      $or: [
-        {
-          raterUserId: req.userId,
-        },
-        {
-          ratedUserId: req.userId,
-        },
-      ],
+      raterUserId:req.userId
     });
     if (!rating.length) throw new ApiError(404, "No Ratings Found");
     const response = {
@@ -108,7 +94,7 @@ const showRecentRating = asyncHandler(async (req: Request, res: Response): Promi
   const user = await User.findById(req.userId)
   if (!user || !isWorker(user)) throw new ApiError(403, "Permission Denied")
   
-  const displayRatings = await Rating.find({ ratedUserId: user._id }).sort({ createdAt: "asc" }).limit(4).select("-ratedUserId").lean()
+  const displayRatings = await Rating.find({ ratedUserId: user._id }).populate("raterUserId","fullName profilePicture").sort({ createdAt: "asc" }).limit(4).select("-ratedUserId").lean()
   if (!displayRatings) throw new ApiError(404, "No Ratings Found")
   
   res.status(200).json(new ApiResponse(200, displayRatings, "Ratings Fetched Successfully"))
@@ -131,7 +117,7 @@ const viewAllRating = asyncHandler(async (req: Request, res: Response): Promise<
     query["ratedUserId"]=req.userId
   }
   logger.info(query)
-  const allRatings = await Rating.find(query).limit(perPage).skip((page-1)*perPage).sort({createdAt:"asc"}).lean()
+  const allRatings = await Rating.find(query).populate("raterUserId","fullName profilePicture").limit(perPage).skip((page-1)*perPage).sort({createdAt:"asc"}).lean()
   if (!allRatings) throw new ApiError(404, "No Ratings Found")
   
   res.status(200).json(new ApiResponse(200,allRatings,"Ratings Fetched"))

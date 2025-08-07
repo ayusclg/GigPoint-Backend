@@ -45,7 +45,7 @@ const createJob = asyncHandler(
       },
       priority,
       image: cloudUrl,
-      createdBy: creator._id,
+      createdBy: new mongoose.Types.ObjectId(creator._id as string),
       category,
       address,
     });
@@ -353,14 +353,14 @@ const recomendJob = asyncHandler(
 
     const foundJobs = await Job.find({
       category: { $in: worker.skills },
-    });
-    console.log(foundJobs)
+      status:"searching"
+    }).select("-applications -updatedAt").populate("createdBy","fullName phoneNo profilePicture ").exec()
+  
 
-    const recommendedJobs = foundJobs.filter((jobs)=>jobs.address.toLowerCase() === worker?.address?.toLowerCase())
-    console.log(recommendedJobs)
+    const recommendedJobs = foundJobs.filter((jobs) => jobs.address.toLowerCase() === worker?.address?.toLowerCase())
+    
     const forExperienced: Ijob[] = [];
-    const forBelowExperienced:Ijob[] = [];
-
+    const forBelowExperienced: Ijob[] = [];
     for (const job of recommendedJobs) {
       const isBelowExperienced:Boolean = worker.experienceYear < 5;
       const isLowOrMediumPriority =
