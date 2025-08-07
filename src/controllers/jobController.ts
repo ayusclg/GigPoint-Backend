@@ -387,7 +387,7 @@ const recomendJob = asyncHandler(
     if (worker.experienceYear < 5) {
       res
         .status(200)
-        .json(new ApiResponse(200, {recommendedJobs,jobCreatedOn}, "Jobs Recommended"));
+        .json(new ApiResponse(200, {forBelowExperienced,jobCreatedOn}, "Jobs Recommended"));
     } else {
       res
         .status(200)
