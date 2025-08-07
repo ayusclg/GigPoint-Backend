@@ -358,16 +358,25 @@ const recomendJob = asyncHandler(
   
 
     const recommendedJobs = foundJobs.filter((jobs) => jobs.address.toLowerCase() === worker?.address?.toLowerCase())
-    
+    let jobCreatedOn;
     const forExperienced: Ijob[] = [];
     const forBelowExperienced: Ijob[] = [];
     for (const job of recommendedJobs) {
+      
+      const createdAt = new Date(job.createdAt as any)
+       jobCreatedOn = createdAt.toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day:"2-digit"
+      })
+       
       const isBelowExperienced:Boolean = worker.experienceYear < 5;
       const isLowOrMediumPriority =
         job.priority === "low" || job.priority === "medium";
 
       if (isBelowExperienced && isLowOrMediumPriority) {
-        forBelowExperienced.push(job );
+        forBelowExperienced.push(job);
+        
        
       } else {
         forExperienced.push(job );
@@ -378,11 +387,11 @@ const recomendJob = asyncHandler(
     if (worker.experienceYear < 5) {
       res
         .status(200)
-        .json(new ApiResponse(200, forBelowExperienced, "Jobs Recommended"));
+        .json(new ApiResponse(200, {recommendedJobs,jobCreatedOn}, "Jobs Recommended"));
     } else {
       res
         .status(200)
-        .json(new ApiResponse(200, forExperienced, "Jobs Recommended"));
+        .json(new ApiResponse(200, {forExperienced,jobCreatedOn}, "Jobs Recommended"));
     }
   }
 );

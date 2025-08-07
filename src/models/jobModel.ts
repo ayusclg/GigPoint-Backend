@@ -32,6 +32,8 @@ export interface Ijob extends mongoose.Document{
     category:category;
     finalPrice: number;
     address: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 const priceRangeSchema = new mongoose.Schema<PriceRange>({
