@@ -322,6 +322,7 @@ const searchJob = asyncHandler(
       throw new ApiError(403, "Only Workers Can Search Job");
 
     let query: Record<string, any> = {};
+    query.status="searching"
     query.title = new RegExp(title, "i");
     const countQuery = await Job.countDocuments(query);
     if (countQuery == null) throw new ApiError(404, "No Jobs Found");
