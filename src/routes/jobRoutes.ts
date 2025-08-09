@@ -16,6 +16,7 @@ import {
   recomendWorkerNearby
 } from "../controllers/jobController";
 import { validateJobPost } from "../middlewares/validation";
+import { myCompletedJobs } from "../controllers/userController";
 
 const router = express.Router();
 
@@ -33,5 +34,5 @@ router.route("/worker/get/application").get(verifyUser, viewMyApplications);
 router.route("/searchJob").post(verifyUser, searchJob);
 router.route("/recomendJob").get(verifyUser, recomendJob)
 router.route("/recomendWorker").get(verifyUser,recomendWorkerNearby)
-
+router.route("/myCompleted").get(verifyUser,myCompletedJobs)
 export default router;
