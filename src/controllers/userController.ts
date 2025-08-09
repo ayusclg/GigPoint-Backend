@@ -464,7 +464,6 @@ const myRecentWorkers = asyncHandler(
       .populate("assignedTo", "fullName profilePicture address email")
       .sort({ createdAt: "desc" })
       .limit(5);
-    console.log(jobs)
     let workers: Iuser[] = [];
     for (const job of jobs) {
       const assigned = job.assignedTo
@@ -473,8 +472,6 @@ const myRecentWorkers = asyncHandler(
         workers.push(assigned as any)
       }
     }
-  
-
     res.status(200).json(new ApiResponse(200, workers, "RecentWorkersFetched"));
   }
 );
