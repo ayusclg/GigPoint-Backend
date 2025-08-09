@@ -12,7 +12,7 @@ import passport from "passport";
 import googleRoutes from "./routes/gooleRoutes";
 import { swaggerDocs } from "./config/swagger";
 import aiRoutes from "./routes/aiRoute";
-import cors from "cors";
+import cors, { CorsOptionsDelegate, CorsRequest } from "cors";
 import "./utils/redisClient";
 import morgan from "morgan";
 
@@ -32,12 +32,23 @@ import "./config/Passport";
 import { logger } from "./Logger";
 //middlewares
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
+
+//frontend-connection
+const allowedOrigin =["http://localhost:5173"]
+const CorsOptionsDelegate: CorsOptionsDelegate = async (req:CorsRequest, callback) => {
+  const origin = req.headers.origin
+  if (!origin || allowedOrigin.includes(origin)) return callback(null, {
     credentials: true,
+    origin:true
   })
-);
+  else callback(new Error("Not Allowed By Cors"), {
+    origin:false
+  })
+}
+
+app.use(cors(CorsOptionsDelegate))
+
+
 passport.initialize();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
