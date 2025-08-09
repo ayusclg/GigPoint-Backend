@@ -475,6 +475,21 @@ const myRecentWorkers = asyncHandler(
     res.status(200).json(new ApiResponse(200, workers, "RecentWorkersFetched"));
   }
 );
+
+const myCompletedJobs = asyncHandler(async (req: Request, res: Response):Promise<void> => {
+  const userCheck = await User.findById(req.userId)
+  if (!userCheck || !isWorker(userCheck)) throw new ApiError(403, "Permission Denied")
+  
+  const page = parseInt(req.query.page as string) || 1
+  const perPage = parseInt(req.query.perPage as string) || 5
+  
+  const skip = (page-1)*perPage
+  const completedJobs = await Job.find({ assignedTo: userCheck }).select("title createdAt createdBy priority address ").skip(skip).limit(perPage).sort({ createdAt: "asc" }).exec()
+  if (!completedJobs) throw new ApiError(404, "No completed Jobs Found")
+  
+  res.status(200).json(new ApiResponse(200,completedJobs,"Completed Jobs Fetched Successfully"))
+  
+})
 export {
   workerRegister,
   workerLogin,
@@ -490,4 +505,5 @@ export {
   addUserAddress,
   workerReports,
   myRecentWorkers,
+  myCompletedJobs
 };
