@@ -34,6 +34,7 @@ export interface Ijob extends mongoose.Document{
     address: string;
     createdAt?: Date;
     updatedAt?: Date;
+    deadline: Date;
 }
 
 const priceRangeSchema = new mongoose.Schema<PriceRange>({
@@ -90,6 +91,10 @@ const jobSchema = new mongoose.Schema({
     },
     address: {
         type: String,
+        required:true,
+    },
+    deadline: {
+        type: Date,
         required:true,
     }
 }, {

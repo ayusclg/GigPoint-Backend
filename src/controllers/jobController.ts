@@ -25,7 +25,7 @@ const createJob = asyncHandler(
     if (!creator || isWorker(creator))
       throw new ApiError(403, "Permission Denied");
 
-    const { title, description, priceRange, priority, category, address } =
+    const { title, description, priceRange, priority, category, address,deadline } =
       req.body;
 
     let cloudUrl;
@@ -48,6 +48,7 @@ const createJob = asyncHandler(
       createdBy: new mongoose.Types.ObjectId(creator._id as string),
       category,
       address,
+      deadline,
     });
     if (!createdJob) throw new ApiError(400, "Error In Creating Job");
     creator.jobPosted.push(createdJob._id as any);
@@ -121,6 +122,11 @@ const applyJob = asyncHandler(
       appliedBy: req.userId,
     });
     if (application) throw new ApiError(403, "Twice cant be Applied");
+    const deadlineCheck = job.deadline.getTime() - Date.now()
+    if (deadlineCheck < 0) {
+      throw new ApiError(404,"Deadline Already Completed")
+    }
+    
     if (job.assignedTo) throw new ApiError(403, "Job Already Assigned");
     let applyJob: Iapply;
     if (isWorker(user)) {
