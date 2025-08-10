@@ -15,6 +15,7 @@ import {
   addUserAddress,
   workerReports,
   myRecentWorkers,
+  myCompletedJobs
 } from "../controllers/userController";
 import { verifyUser } from "../middlewares/auth";
 import {
@@ -54,5 +55,5 @@ router.route("/available").post(verifyUser, makeAvailable)
 router.route("/uAddress").post(verifyUser, addUserAddress)  
 router.route("/workerReports").get(verifyUser, workerReports)
 router.route("/recentWorkers").get(verifyUser,myRecentWorkers)
-
+router.route("/myCompleted").get(verifyUser, myCompletedJobs);
 export default router;
