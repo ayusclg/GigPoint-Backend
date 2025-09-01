@@ -7,6 +7,7 @@ import { ApiResponse } from "../utils/ApiRes";
 const googleCallback = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const user = req.user as Iuser;
+    
     if (!user) throw new ApiError(403, "Permission Denied");
     const refreshToken = user.generateRefreshToken();
     const accessToken = user.generateAccessToken();
@@ -14,16 +15,16 @@ const googleCallback = asyncHandler(
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: true,
-      path: "./api",
+      path: "/api",
       sameSite:"none"
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      path:"./api"
+      path:"/api"
     });
-    res.status(200).json(new ApiResponse(200,user,"User LoggedIn"))
+    res.redirect("http://localhost:5173/dashboard");
 
   }
 );
