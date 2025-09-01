@@ -23,7 +23,7 @@ const googleCallback = asyncHandler(
       sameSite: "none",
       path:"./api"
     });
-    res.redirect("http://localhost:5173/oauth-success");
+    res.status(200).json(new ApiResponse(200,user,"User LoggedIn"))
 
   }
 );
