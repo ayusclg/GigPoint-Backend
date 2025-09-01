@@ -12,7 +12,7 @@ export interface Iuser extends Document{
     email: string,
     password?: string;
     profilePicture?: string;
-    phoneNo: string;
+    phoneNo?: string;
     address?: string;
     skills: skills[];
     experienceYear: number,
