@@ -15,14 +15,14 @@ const googleCallback = asyncHandler(
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: true,
-      path: "/api",
+      path: "/",
       sameSite:"none"
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      path:"/api"
+      path:"/"
     });
     res.redirect("http://localhost:5173/user-dashboard");
 
