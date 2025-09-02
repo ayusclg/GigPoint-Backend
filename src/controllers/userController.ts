@@ -10,500 +10,458 @@ import fs from "fs";
 import { sendMail } from "../services/Nodemailer";
 import { filterQuery } from "../middlewares/filterQuery";
 import { isWorker } from "../utils/Rolecheck";
-import { Ijob, Job } from "../models/jobModel";
+import { Job } from "../models/jobModel";
 import { Application } from "../models/applicationModel";
 import { logger } from "../Logger";
-import mongoose, { mongo } from "mongoose";
-import { AnyARecord } from "dns";
-import { array } from "joi";
+import mongoose from "mongoose";
 
-const welcomeEmail = path.join(__dirname, "../templates/welcomeWorker.html");
-const welcome = fs.readFileSync(welcomeEmail, "utf-8");
+const welcomeEmailPath = path.join(
+  __dirname,
+  "../templates/welcomeWorker.html"
+);
+const welcomeTemplate = fs.readFileSync(welcomeEmailPath, "utf-8");
 
-const forgotPasswordEmail = path.join(
+const forgotPasswordPath = path.join(
   __dirname,
   "../templates/forgotPassword.html"
 );
-const passwordEmail = fs.readFileSync(forgotPasswordEmail, "utf-8");
+const forgotPasswordTemplate = fs.readFileSync(forgotPasswordPath, "utf-8");
 
-const workerRegister = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const {
-      fullName,
-      email,
-      password,
-      address,
-      phoneNo,
-      experienceYear,
-      skills,
-      gender,
-      role,
-    } = req.body;
+class UserController {
+  workerRegister = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const {
+        fullName,
+        email,
+        password,
+        address,
+        phoneNo,
+        experienceYear,
+        skills,
+        gender,
+        role,
+      } = req.body;
 
-    const userExist = await User.findOne({ email });
-    if (userExist) throw new ApiError(502, "Please Login");
+      const userExist = await User.findOne({ email });
+      if (userExist) throw new ApiError(502, "Please Login");
 
-    const hashedPw = await bcrypt.hash(password, 12);
-
-    const file = req.file as Express.Multer.File;
-    const cloudUrl = await uploadImageOnCloud(file);
-
-    const userCreate = await User.create({
-      email,
-      phoneNo,
-      fullName,
-      password: hashedPw,
-      profilePicture: cloudUrl,
-      address,
-      experienceYear: Number(experienceYear),
-      skills,
-      role: role || "worker",
-      gender,
-    });
-
-    const userCreated = await User.findById(userCreate._id).select(
-      "-password -refreshToken"
-    );
-    if (!userCreated) throw new ApiError(400, "Server Error In User Creation");
-
-    const welcomeEmail = welcome.replace("{{fullname}}", fullName);
-    const options = {
-      to: email,
-      subject: "Welcome To GigPoint !! ",
-      html: welcomeEmail,
-      message: "Under Dev soon Prod",
-    };
-
-    await sendMail(options);
-    res
-      .status(201)
-      .json(new ApiResponse(201, userCreated, "User Account Created"));
-  }
-);
-
-const workerLogin = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { email, password } = req.body;
-    if (!email || !password) throw new ApiError(403, "Access Forbidden");
-
-    const userExist = await User.findOne({ email });
-    if (!userExist?.password) throw new ApiError(401, "Please Register");
-
-    const checkPW = await bcrypt.compare(password, userExist.password);
-    if (!checkPW)
-      throw new ApiError(403, "Permission Denied (Incorrect Password)");
-
-    const refreshToken = userExist.generateRefreshToken();
-    const accessToken = userExist.generateAccessToken();
-    if (!accessToken || !refreshToken)
-      throw new ApiError(404, "Tokens Not Generated");
-
-    const userLogin = await User.findById(userExist._id).select(
-      "-password -refreshToken"
-    );
-    if (!userLogin) throw new ApiError(400, "ErrorIN Getting loggedIn User");
-
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "./api",
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "./api",
-    });
-    res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          { userLogin, accessToken, refreshToken },
-          "User Successfully LoggedIn"
-        )
-      );
-  }
-);
-
-const userLogout = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "./api",
-    });
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "./api",
-    });
-    res.status(200).json(new ApiResponse(200, " ", "User logged Out"));
-  }
-);
-
-const getUserById = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const user = req.params.id;
-
-    const dbUser = await User.findById(user);
-    if (!dbUser) throw new ApiError(404, "Requested User Not Found");
-    let gotUser;
-    let response: Record<string, any> = {};
-    if (isWorker(dbUser)) {
-      gotUser = await User.findById(dbUser._id)
-        .select("-password -refreshToken -googleId -jobPosted")
-        .populate("jobDone", "ttile createdBy")
-        .populate("rating", "point comment");
-
-      const totalJobsDone = await Job.countDocuments({
-        assignedTo: dbUser._id,
-      });
-      const totalJobApplied = await Application.countDocuments({
-        appliedBy: dbUser._id,
-      });
-      response["JobsDone"] = totalJobsDone || 0;
-      response["JobsApplied"] = totalJobApplied || 0;
-      response["Worker"] = gotUser;
-    } else {
-      gotUser = await User.findById(dbUser._id)
-        .select(
-          "-password -skills -experienceYear -jobDone -googleId -refreshToken -isAvailable"
-        )
-        .populate("jobPosted", "title description status");
-
-      const totalJobsPosted = await Job.countDocuments({
-        createdBy: dbUser._id,
-      });
-      response["JobPosted"] = totalJobsPosted || 0;
-      response["User"] = gotUser;
-    }
-    res
-      .status(200)
-      .json(
-        new ApiResponse(200, response, `${dbUser.role} Fetched Successfully`)
-      );
-  }
-);
-
-const myProfile = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const userProfile = await User.findById(req.userId);
-    if (!userProfile) {
-      throw new ApiError(404, "User Not Found");
-    }
-    let user;
-    let response: Record<string, any> = {};
-
-    const joinedTimeISO = new Date(userProfile.createdAt);
-    const joinedLocalFormat = joinedTimeISO.toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-    response["JoinedOn"] = joinedLocalFormat || "";
-    if (isWorker(userProfile)) {
-      user = await User.findById(userProfile._id)
-        .select(
-          "-password -refreshToken -googleId -jobPosted -resetOtp -resetOtpExpiry "
-        )
-        .populate("jobDone", "ttile createdBy")
-        .populate("rating", "point comment");
-
-      const totalJobsDone = await Job.countDocuments({
-        assignedTo: userProfile._id,
-      });
-      const totalJobApplied = await Application.countDocuments({
-        appliedBy: userProfile._id,
-      });
-
-      response["JobsDone"] = totalJobsDone || 0;
-      response["JobsApplied"] = totalJobApplied || 0;
-      response["Worker"] = user;
-    } else {
-      user = await User.findById(userProfile._id)
-        .select(
-          "-password -skills -experienceYear -jobDone -googleId -refreshToken -isAvailable"
-        )
-        .populate("jobPosted", "title description status");
-      const totalJobsPosted = await Job.countDocuments({
-        createdBy: userProfile._id,
-      });
-      response["JobPosted"] = totalJobsPosted || 0;
-      response["User"] = user;
-    }
-
-    res
-      .status(200)
-      .json(new ApiResponse(200, response, "User Fetched Successfully"));
-  }
-);
-
-const updateWorkerDetails = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { address, phoneNo, skills, currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.userId);
-    if (!user) throw new ApiError(403, "User Not Found");
-
-    if (skills) {
-      if (!Array.isArray(skills))
-        throw new ApiError(400, "Skills Must Be Array");
-    }
-    if (currentPassword) {
-      const checkPassword = await bcrypt.compare(
-        currentPassword,
-        user.password as string
-      );
-      if (!checkPassword)
-        throw new ApiError(403, "Please Enter Correct Current Password");
-    }
-    let hashedPassword;
-    if (newPassword) {
-      hashedPassword = await bcrypt.hash(newPassword, 10);
-    }
-    let cloudUrl;
-    if (req.file) {
+      const hashedPw = await bcrypt.hash(password, 12);
       const file = req.file as Express.Multer.File;
-      cloudUrl = await uploadImageOnCloud(file);
-    }
-    if (address) user.address = address;
-    if (phoneNo) user.phoneNo = phoneNo;
-    if (skills) user.skills = skills;
-    if (newPassword) user.password = hashedPassword;
-    if (cloudUrl) user.profilePicture = cloudUrl;
-    await user.save();
-    res.status(200).json(new ApiResponse(200, user, "User Detail Updated"));
-  }
-);
+      const cloudUrl = await uploadImageOnCloud(file);
 
-const searchWorker = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const filter = req.query.filter as string;
-    const page = parseInt(req.query.page as string) || 1;
-    const perPage = parseInt(req.query.perPage as string) || 4;
-    const sortOption = (req.query.sortOption as string) || "createdAt";
+      const userCreate = await User.create({
+        email,
+        phoneNo,
+        fullName,
+        password: hashedPw,
+        profilePicture: cloudUrl,
+        address,
+        experienceYear: Number(experienceYear),
+        skills,
+        role: role || "worker",
+        gender,
+      });
 
-    const query = filter ? filterQuery(filter) : {};
-    query.role = "worker";
-    const totalDocuments = await User.countDocuments(query);
-    if (!totalDocuments) throw new ApiError(404, "No Worker found");
-
-    const limit = perPage;
-    const skip = (page - 1) * perPage;
-
-    const result = await User.find(query)
-      .select(
-        "-password -refreshToken -email -phoneNo -jobPosted -jobDone -experienceYear -isAvailable -jobApplied"
-      )
-      .sort({ [sortOption]: 1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    const response = {
-      page,
-      perPage,
-      totalDocuments,
-      result,
-    };
-    res.status(200).json(new ApiResponse(200, response, "Search Successfull"));
-  }
-);
-
-const forgotPassword = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) throw new ApiError(404, "User Not Found");
-    if (!isWorker(user))
-      throw new ApiError(403, "You Cannot Change Your Password");
-    const otp = Math.floor(Math.random() * 900000 + 100000).toString();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    console.log(otp, "OTP", otpExpiry, "expiry");
-
-    user.resetOtp = otp;
-    user.resetOtpExpiry = otpExpiry;
-    await user.save();
-    const html = passwordEmail
-      .replace("{{username}}", user.fullName.split(" ")[0])
-      .replace("{{otp}}", otp);
-
-    const mailOptions = {
-      to: user.email,
-      subject: "GigPoint Password Reset",
-      html,
-      message: "under dev soon prod",
-    };
-
-    await sendMail(mailOptions);
-    res.status(200).json(new ApiResponse(200, "", "Password Reset Otp Send"));
-  }
-);
-
-const verifyOtp = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { email, otp } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) throw new ApiError(404, "User Not Found");
-
-    if (otp !== user.resetOtp) {
-      throw new ApiError(403, "Invalid OTP");
-    }
-    if (!user.resetOtpExpiry || user.resetOtpExpiry < new Date()) {
-      throw new ApiError(403, "OTP Expired");
-    }
-
-    res.status(200).json(new ApiResponse(200, "", "OTP verified Successfully"));
-  }
-);
-
-const resetPassword = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { email, otp, newPassword } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) throw new ApiError(404, "User Not Found");
-
-    if (user.resetOtp !== otp) throw new ApiError(400, "Invalid OTP ");
-    if (!user.resetOtpExpiry || user.resetOtpExpiry < new Date())
-      throw new ApiError(400, "OTP Expired");
-
-    const checkPassword = await bcrypt.compare(
-      newPassword,
-      user.password as string
-    );
-    if (checkPassword) throw new ApiError(400, "Old Passwords Cant Be Used");
-
-    const hashNewPassword = await bcrypt.hash(newPassword, 10);
-
-    user.password = hashNewPassword;
-
-    await user.save();
-
-    user.resetOtp = undefined;
-    user.resetOtpExpiry = undefined;
-    await user.save();
-    const changedUser = await User.findById(user._id).select(
-      "-password -refreshToken -resetOtp -resetOtpExpiry "
-    );
-
-    res
-      .status(200)
-      .json(new ApiResponse(200, changedUser, "User Password Changed"));
-  }
-);
-
-const makeAvailable = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { isAvailable } = req.body;
-    const user = await User.findById(req.userId);
-    if (!user || !isWorker(user))
-      throw new ApiError(403, "You Are Not Allowed");
-    user.isAvailable = isAvailable;
-    await user.save();
-    res
-      .status(200)
-      .json(new ApiResponse(200, user, "User Availability Changed"));
-  }
-);
-
-const addUserAddress = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { address } = req.body;
-    const user = await User.findById(req.userId);
-    if (!user || isWorker(user)) throw new ApiError(403, "Permission Denied");
-    user.address = address;
-    await user.save();
-
-    res.status(200).json(new ApiResponse(200, user, "User Address Added"));
-  }
-);
-
-const workerReports = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const user = await User.findById(req.userId);
-    if (!user || !isWorker(user))
-      throw new ApiError(403, "You Are Not Allowed");
-
-    const data = await Job.aggregate([
-      {
-        $match: {
-          assignedTo: new mongoose.Types.ObjectId(req.userId),
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalEarning: { $sum: "$finalPrice" },
-        },
-      },
-    ]);
-    const totalEarning = data[0]?.totalEarning || 0;
-    const response = {
-      totalEarning,
-    };
-    res
-      .status(200)
-      .json(
-        new ApiResponse(200, response, "Worker Reports Fetched Successfully")
+      const userCreated = await User.findById(userCreate._id).select(
+        "-password -refreshToken"
       );
-  }
-);
+      if (!userCreated)
+        throw new ApiError(400, "Server Error In User Creation");
 
-const myRecentWorkers = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const user = await User.findById(req.userId);
-    if (!user || isWorker(user)) throw new ApiError(403, "Permission Denied");
+      const welcomeHtml = welcomeTemplate.replace("{{fullname}}", fullName);
+      await sendMail({
+        to: email,
+        subject: "Welcome To GigPoint !!",
+        html: welcomeHtml,
+        message: "Under Dev soon Prod",
+      });
 
-    const jobs = await Job.find({
-      createdBy: user._id,
-    })
-      .populate("assignedTo", "fullName profilePicture address email")
-      .sort({ createdAt: "desc" })
-      .limit(5);
-    let workers: Iuser[] = [];
-    for (const job of jobs) {
-      const assigned = job.assignedTo
-      const exist = workers.includes(assigned as any)
-      if (!exist) {
-        workers.push(assigned as any)
-      }
+      res
+        .status(201)
+        .json(new ApiResponse(201, userCreated, "User Account Created"));
     }
-    res.status(200).json(new ApiResponse(200, workers, "RecentWorkersFetched"));
-  }
-);
+  );
 
-const myCompletedJobs = asyncHandler(async (req: Request, res: Response):Promise<void> => {
-  const userCheck = await User.findById(req.userId)
-  if (!userCheck || !isWorker(userCheck)) throw new ApiError(403, "Permission Denied")
-  
-  const page = parseInt(req.query.page as string) || 1
-  const perPage = parseInt(req.query.perPage as string) || 5
-  
-  const skip = (page-1)*perPage
-  const completedJobs = await Job.find({ assignedTo: userCheck }).select("title createdAt createdBy priority address ").skip(skip).limit(perPage).sort({ createdAt: "asc" }).exec()
-  if (!completedJobs) throw new ApiError(404, "No completed Jobs Found")
-  
-  res.status(200).json(new ApiResponse(200,completedJobs,"Completed Jobs Fetched Successfully"))
-  
-})
-export {
-  workerRegister,
-  workerLogin,
-  userLogout,
-  getUserById,
-  myProfile,
-  updateWorkerDetails,
-  searchWorker,
-  forgotPassword,
-  resetPassword,
-  verifyOtp,
-  makeAvailable,
-  addUserAddress,
-  workerReports,
-  myRecentWorkers,
-  myCompletedJobs
-};
+  workerLogin = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { email, password } = req.body;
+      if (!email || !password) throw new ApiError(403, "Access Forbidden");
+
+      const userExist = await User.findOne({ email });
+      if (!userExist?.password) throw new ApiError(401, "Please Register");
+
+      const checkPW = await bcrypt.compare(password, userExist.password);
+      if (!checkPW)
+        throw new ApiError(403, "Permission Denied (Incorrect Password)");
+
+      const refreshToken = userExist.generateRefreshToken();
+      const accessToken = userExist.generateAccessToken();
+
+      const userLogin = await User.findById(userExist._id).select(
+        "-password -refreshToken"
+      );
+      if (!userLogin) throw new ApiError(400, "ErrorIN Getting loggedIn User");
+
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "./api",
+      });
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "./api",
+      });
+
+      res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            { userLogin, accessToken, refreshToken },
+            "User Successfully LoggedIn"
+          )
+        );
+    }
+  );
+
+  userLogout = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "./api",
+      });
+      res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "./api",
+      });
+      res.status(200).json(new ApiResponse(200, "", "User logged Out"));
+    }
+  );
+
+  getUserById = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const user = req.params.id;
+      const dbUser = await User.findById(user);
+      if (!dbUser) throw new ApiError(404, "Requested User Not Found");
+
+      const response: Record<string, any> = {};
+      if (isWorker(dbUser)) {
+        const gotUser = await User.findById(dbUser._id)
+          .select("-password -refreshToken -googleId -jobPosted")
+          .populate("jobDone", "title createdBy")
+          .populate("rating", "point comment");
+
+        response["JobsDone"] = await Job.countDocuments({
+          assignedTo: dbUser._id,
+        });
+        response["JobsApplied"] = await Application.countDocuments({
+          appliedBy: dbUser._id,
+        });
+        response["Worker"] = gotUser;
+      } else {
+        const gotUser = await User.findById(dbUser._id)
+          .select(
+            "-password -skills -experienceYear -jobDone -googleId -refreshToken -isAvailable"
+          )
+          .populate("jobPosted", "title description status");
+
+        response["JobPosted"] = await Job.countDocuments({
+          createdBy: dbUser._id,
+        });
+        response["User"] = gotUser;
+      }
+
+      res
+        .status(200)
+        .json(
+          new ApiResponse(200, response, `${dbUser.role} Fetched Successfully`)
+        );
+    }
+  );
+
+  myProfile = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const userProfile = await User.findById(req.userId);
+      if (!userProfile) throw new ApiError(404, "User Not Found");
+
+      const response: Record<string, any> = {};
+      response["JoinedOn"] = new Date(userProfile.createdAt).toLocaleDateString(
+        "en-US",
+        { year: "numeric", month: "short", day: "numeric" }
+      );
+
+      if (isWorker(userProfile)) {
+        const worker = await User.findById(userProfile._id)
+          .select(
+            "-password -refreshToken -googleId -jobPosted -resetOtp -resetOtpExpiry"
+          )
+          .populate("jobDone", "title createdBy")
+          .populate("rating", "point comment");
+
+        response["JobsDone"] = await Job.countDocuments({
+          assignedTo: userProfile._id,
+        });
+        response["JobsApplied"] = await Application.countDocuments({
+          appliedBy: userProfile._id,
+        });
+        response["Worker"] = worker;
+      } else {
+        const user = await User.findById(userProfile._id)
+          .select(
+            "-password -skills -experienceYear -jobDone -googleId -refreshToken -isAvailable"
+          )
+          .populate("jobPosted", "title description status");
+        response["JobPosted"] = await Job.countDocuments({
+          createdBy: userProfile._id,
+        });
+        response["User"] = user;
+      }
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, response, "User Fetched Successfully"));
+    }
+  );
+
+  updateWorkerDetails = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { address, phoneNo, skills, currentPassword, newPassword } =
+        req.body;
+      const user = await User.findById(req.userId);
+      if (!user) throw new ApiError(403, "User Not Found");
+
+      if (skills && !Array.isArray(skills))
+        throw new ApiError(400, "Skills Must Be Array");
+      if (
+        currentPassword &&
+        !(await bcrypt.compare(currentPassword, user.password as string))
+      )
+        throw new ApiError(403, "Please Enter Correct Current Password");
+
+      if (newPassword) user.password = await bcrypt.hash(newPassword, 10);
+      if (req.file)
+        user.profilePicture = await uploadImageOnCloud(
+          req.file as Express.Multer.File
+        );
+      if (address) user.address = address;
+      if (phoneNo) user.phoneNo = phoneNo;
+      if (skills) user.skills = skills;
+
+      await user.save();
+      res.status(200).json(new ApiResponse(200, user, "User Detail Updated"));
+    }
+  );
+
+  searchWorker = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const filter = req.query.filter as string;
+      const page = parseInt(req.query.page as string) || 1;
+      const perPage = parseInt(req.query.perPage as string) || 4;
+      const sortOption = (req.query.sortOption as string) || "createdAt";
+
+      const query = filter ? filterQuery(filter) : {};
+      query.role = "worker";
+      const totalDocuments = await User.countDocuments(query);
+      if (!totalDocuments) throw new ApiError(404, "No Worker found");
+
+      const result = await User.find(query)
+        .select(
+          "-password -refreshToken -email -phoneNo -jobPosted -jobDone -experienceYear -isAvailable -jobApplied"
+        )
+        .sort({ [sortOption]: 1 })
+        .skip((page - 1) * perPage)
+        .limit(perPage)
+        .lean();
+
+      res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            { page, perPage, totalDocuments, result },
+            "Search Successful"
+          )
+        );
+    }
+  );
+
+  forgotPassword = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { email } = req.body;
+      const user = await User.findOne({ email });
+      if (!user || !isWorker(user))
+        throw new ApiError(404, "User Not Found or Unauthorized");
+
+      const otp = Math.floor(Math.random() * 900000 + 100000).toString();
+      user.resetOtp = otp;
+      user.resetOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+      await user.save();
+
+      const html = forgotPasswordTemplate
+        .replace("{{username}}", user.fullName.split(" ")[0])
+        .replace("{{otp}}", otp);
+      await sendMail({
+        to: user.email,
+        subject: "GigPoint Password Reset",
+        html,
+        message: "under dev soon prod",
+      });
+
+      res.status(200).json(new ApiResponse(200, "", "Password Reset Otp Sent"));
+    }
+  );
+
+  verifyOtp = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { email, otp } = req.body;
+      const user = await User.findOne({ email });
+      if (
+        !user ||
+        otp !== user.resetOtp ||
+        !user.resetOtpExpiry ||
+        user.resetOtpExpiry < new Date()
+      )
+        throw new ApiError(403, "Invalid or Expired OTP");
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, "", "OTP verified Successfully"));
+    }
+  );
+
+  resetPassword = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { email, otp, newPassword } = req.body;
+      const user = await User.findOne({ email });
+      if (
+        !user ||
+        user.resetOtp !== otp ||
+        !user.resetOtpExpiry ||
+        user.resetOtpExpiry < new Date()
+      )
+        throw new ApiError(400, "Invalid OTP or Expired");
+
+      if (await bcrypt.compare(newPassword, user.password as string))
+        throw new ApiError(400, "Old Passwords Cannot Be Used");
+
+      user.password = await bcrypt.hash(newPassword, 10);
+      user.resetOtp = undefined;
+      user.resetOtpExpiry = undefined;
+      await user.save();
+
+      const changedUser = await User.findById(user._id).select(
+        "-password -refreshToken -resetOtp -resetOtpExpiry"
+      );
+      res
+        .status(200)
+        .json(new ApiResponse(200, changedUser, "User Password Changed"));
+    }
+  );
+
+  makeAvailable = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { isAvailable } = req.body;
+      const user = await User.findById(req.userId);
+      if (!user || !isWorker(user))
+        throw new ApiError(403, "You Are Not Allowed");
+
+      user.isAvailable = isAvailable;
+      await user.save();
+      res
+        .status(200)
+        .json(new ApiResponse(200, user, "User Availability Changed"));
+    }
+  );
+
+  addUserAddress = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { address } = req.body;
+      const user = await User.findById(req.userId);
+      if (!user || isWorker(user)) throw new ApiError(403, "Permission Denied");
+
+      user.address = address;
+      await user.save();
+      res.status(200).json(new ApiResponse(200, user, "User Address Added"));
+    }
+  );
+
+  workerReports = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const user = await User.findById(req.userId);
+      if (!user || !isWorker(user))
+        throw new ApiError(403, "You Are Not Allowed");
+
+      const data = await Job.aggregate([
+        { $match: { assignedTo: new mongoose.Types.ObjectId(req.userId) } },
+        { $group: { _id: null, totalEarning: { $sum: "$finalPrice" } } },
+      ]);
+      res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            { totalEarning: data[0]?.totalEarning || 0 },
+            "Worker Reports Fetched Successfully"
+          )
+        );
+    }
+  );
+
+  myRecentWorkers = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const user = await User.findById(req.userId);
+      if (!user || isWorker(user)) throw new ApiError(403, "Permission Denied");
+
+      const jobs = await Job.find({ createdBy: user._id })
+        .populate("assignedTo", "fullName profilePicture address email")
+        .sort({ createdAt: "desc" })
+        .limit(5);
+
+      const workers: Iuser[] = [];
+      for (const job of jobs)
+        if (job.assignedTo && !workers.includes(job.assignedTo as any))
+          workers.push(job.assignedTo as any);
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, workers, "Recent Workers Fetched"));
+    }
+  );
+
+  myCompletedJobs = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const userCheck = await User.findById(req.userId);
+      if (!userCheck || !isWorker(userCheck))
+        throw new ApiError(403, "Permission Denied");
+
+      const page = parseInt(req.query.page as string) || 1;
+      const perPage = parseInt(req.query.perPage as string) || 5;
+      const completedJobs = await Job.find({ assignedTo: userCheck })
+        .select("title createdAt createdBy priority address")
+        .skip((page - 1) * perPage)
+        .limit(perPage)
+        .sort({ createdAt: "asc" })
+        .exec();
+
+      if (!completedJobs) throw new ApiError(404, "No completed Jobs Found");
+      res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            completedJobs,
+            "Completed Jobs Fetched Successfully"
+          )
+        );
+    }
+  );
+}
+
+export const userController = new UserController();

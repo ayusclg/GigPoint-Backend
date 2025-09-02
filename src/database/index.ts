@@ -1,17 +1,21 @@
 import mongoose from "mongoose";
 import { logger } from "../Logger";
 
-export const dbConnect = async () => {
-  try {
-    const mongoInstace = await mongoose.connect(
-      process.env.MONGODB_URI as string
-    );
-    logger.info(
-      "MongoDb Connected Successfully on:",
-      mongoInstace.connection.host
-    );
-  } catch (error) {
-    logger.error("Error In MONGODB", error);
-    process.exit(1);
+class Database {
+  public async connect(): Promise<void> {
+    try {
+      const mongoInstance = await mongoose.connect(
+        process.env.MONGODB_URI as string
+      );
+      logger.info(
+        "MongoDB Connected Successfully on:",
+        mongoInstance.connection.host
+      );
+    } catch (error) {
+      logger.error("Error in MongoDB", error);
+      process.exit(1);
+    }
   }
-};
+}
+
+export const dbConnect = new Database().connect.bind(new Database());

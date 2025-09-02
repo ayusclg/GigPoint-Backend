@@ -1,38 +1,46 @@
+// routes/jobRoutes.ts
 import express from "express";
 import { verifyUser } from "../middlewares/auth";
 import { Upload } from "../middlewares/UploadImage";
-import {
-  applyJob,
-  approveJobApplication,
-  createJob,
-  deleteJob,
-  getJobById,
-  getMyJobs,
-  getSingleApplication,
-  searchJob,
-  viewAllApplication,
-  viewMyApplications,
-  recomendJob,
-  recomendWorkerNearby
-} from "../controllers/jobController";
+import { JobController } from "../controllers/jobController";
 import { validateJobPost } from "../middlewares/validation";
 
-
 const router = express.Router();
+const jobController = new JobController();
 
-router
-  .route("/user/create")
-  .post(verifyUser, Upload.array("image"), validateJobPost, createJob);
-router.route("/user/get/jobs").get(verifyUser, getMyJobs);
-router.route("/get/:id").get(verifyUser, getJobById);
-router.route("/user/delete/:id").delete(verifyUser, deleteJob);
-router.route("/worker/apply/:id").post(verifyUser, applyJob);
-router.route("/user/approve/:id").post(verifyUser, approveJobApplication);
-router.route("/user/apply/view/:id").get(verifyUser, viewAllApplication);
-router.route("/get/application/:id").get(verifyUser, getSingleApplication);
-router.route("/worker/get/application").get(verifyUser, viewMyApplications);
-router.route("/searchJob").post(verifyUser, searchJob);
-router.route("/recomendJob").get(verifyUser, recomendJob)
-router.route("/recomendWorker").get(verifyUser,recomendWorkerNearby)
+router.post(
+  "/user/create",
+  verifyUser,
+  Upload.array("image"),
+  validateJobPost,
+  jobController.createJob
+);
+router.get("/user/get/jobs", verifyUser, jobController.getMyJobs);
+router.get("/get/:id", verifyUser, jobController.getJobById);
+router.delete("/user/delete/:id", verifyUser, jobController.deleteJob);
+router.post("/worker/apply/:id", verifyUser, jobController.applyJob);
+router.post(
+  "/user/approve/:id",
+  verifyUser,
+  jobController.approveJobApplication
+);
+router.get(
+  "/user/apply/view/:id",
+  verifyUser,
+  jobController.viewAllApplication
+);
+router.get(
+  "/get/application/:id",
+  verifyUser,
+  jobController.getSingleApplication
+);
+router.get(
+  "/worker/get/application",
+  verifyUser,
+  jobController.viewMyApplications
+);
+router.post("/searchJob", verifyUser, jobController.searchJob);
+router.get("/recomendJob", verifyUser, jobController.recomendJob);
+router.get("/recomendWorker", verifyUser, jobController.recomendWorkerNearby);
 
 export default router;

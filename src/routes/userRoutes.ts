@@ -1,59 +1,48 @@
 import express from "express";
 import { Upload } from "../middlewares/UploadImage";
-import {
-  getUserById,
-  myProfile,
-  workerLogin,
-  userLogout,
-  workerRegister,
-  updateWorkerDetails,
-  searchWorker,
-  forgotPassword,
-  verifyOtp,
-  resetPassword,
-  makeAvailable,
-  addUserAddress,
-  workerReports,
-  myRecentWorkers,
-  myCompletedJobs
-} from "../controllers/userController";
 import { verifyUser } from "../middlewares/auth";
 import {
   passwordResetValidation,
   validateRegisterWorker,
 } from "../middlewares/validation";
+import { userController } from "../controllers/userController";
 
 const router = express.Router();
+
 /**
  * @swagger
  * tags:
  *   name: Users
  *   description: User management routes
  */
+router.post(
+  "/create",
+  Upload.single("profilePicture"),
+  validateRegisterWorker,
+  userController.workerRegister
+);
+router.post("/login", userController.workerLogin);
+router.post("/logout", verifyUser, userController.userLogout);
+router.get("/getById/:id", verifyUser, userController.getUserById);
+router.get("/my", verifyUser, userController.myProfile);
+router.put(
+  "/update",
+  verifyUser,
+  Upload.single("profilePicture"),
+  userController.updateWorkerDetails
+);
+router.post("/search", verifyUser, userController.searchWorker);
+router.post("/forgotPassword", userController.forgotPassword);
+router.post("/verifyOtp", userController.verifyOtp);
+router.post(
+  "/resetPassword",
+  passwordResetValidation,
+  userController.resetPassword
+);
+router.post("/available", verifyUser, userController.makeAvailable);
+router.post("/uAddress", verifyUser, userController.addUserAddress);
+router.get("/workerReports", verifyUser, userController.workerReports);
+router.get("/recentWorkers", verifyUser, userController.myRecentWorkers);
+router.get("/myCompleted", verifyUser, userController.myCompletedJobs);
 
-router
-  .route("/create")
-  .post(
-    Upload.single("profilePicture"),
-    validateRegisterWorker,
-    workerRegister
-  );
-router.route("/login").post(workerLogin);
-router.route("/logout").post(verifyUser, userLogout);
-router.route("/getById/:id").get(verifyUser, getUserById);
-router.route("/my").get(verifyUser, myProfile);
-router
-  .route("/update")
-  .put(verifyUser, Upload.single("profilePicture"), updateWorkerDetails);
-router.route("/search").post(verifyUser, searchWorker);
-
-router.route("/forgotPassword").post(forgotPassword);
-router.route("/verifyOtp").post(verifyOtp),
-  router.route("/resetPassword").post(passwordResetValidation, resetPassword);
-
-router.route("/available").post(verifyUser, makeAvailable)
-router.route("/uAddress").post(verifyUser, addUserAddress)  
-router.route("/workerReports").get(verifyUser, workerReports)
-router.route("/recentWorkers").get(verifyUser,myRecentWorkers)
-router.route("/myCompleted").get(verifyUser, myCompletedJobs);
 export default router;
