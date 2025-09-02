@@ -1,32 +1,35 @@
-import { asyncHandler } from "../utils/AsyncHandler";
 import { Request, Response } from "express";
+import { asyncHandler } from "../utils/AsyncHandler";
 import { Iuser } from "../models/userModel";
 import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiRes";
 
-const googleCallback = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const user = req.user as Iuser;
-    
-    if (!user) throw new ApiError(403, "Permission Denied");
-    const refreshToken = user.generateRefreshToken();
-    const accessToken = user.generateAccessToken();
- 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      path: "/",
-      sameSite:"none"
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path:"/"
-    });
-    res.redirect("http://localhost:5173/oauth-success");
+export class AuthController {
+  public googleCallback = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const user = req.user as Iuser;
 
-  }
-);
+      if (!user) {
+        throw new ApiError(403, "Permission Denied");
+      }
 
-export { googleCallback };
+      const refreshToken = user.generateRefreshToken();
+      const accessToken = user.generateAccessToken();
+
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        path: "/",
+        sameSite: "none"
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "/"
+      });
+
+      res.redirect("http://localhost:5173/oauth-success");
+    }
+  );
+}

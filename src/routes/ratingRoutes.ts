@@ -1,12 +1,13 @@
-import express from 'express'
-import { verifyUser } from '../middlewares/auth'
-import { createRating, deleteRating, myRating, showRecentRating, viewAllRating } from '../controllers/ratingController'
+import express from "express";
+import { verifyUser } from "../middlewares/auth";
+import { ratingController } from "../controllers/ratingController";
 
-const router = express.Router()
+const router = express.Router();
 
-router.route("/").post(verifyUser, createRating)
-router.route("/my").get(verifyUser, myRating)
-router.route("/delete").delete(verifyUser, deleteRating)
-router.route("/recent").get(verifyUser,showRecentRating)
-router.route("/all").get(verifyUser,viewAllRating)
-export default router
+router.route("/").post(verifyUser, ratingController.createRating);
+router.route("/my").get(verifyUser, ratingController.myRating);
+router.route("/delete").delete(verifyUser, ratingController.deleteRating);
+router.route("/recent").get(verifyUser, ratingController.showRecentRating);
+router.route("/all").get(verifyUser, ratingController.viewAllRating);
+
+export default router;
