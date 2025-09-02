@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import express, { Request, Response, NextFunction } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
 import cors, { CorsOptionsDelegate, CorsRequest } from "cors";
 import morgan from "morgan";
@@ -19,7 +19,7 @@ import "./config/Passport";
 import "./utils/redisClient";
 
 class Server {
-  private app: express.Application;
+  private app: Express;
   private port: number;
   private host: string;
 
@@ -76,7 +76,7 @@ class Server {
   }
 
   private initializeSwagger(): void {
-    swaggerDocs(this.app, this.port);
+    swaggerDocs(this.app as Express, this.port);
   }
 
   private initializeErrorHandling(): void {
