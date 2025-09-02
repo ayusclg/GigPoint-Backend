@@ -12,55 +12,62 @@ import jobRoutes from "./routes/jobRoutes";
 import ratingRoutes from "./routes/ratingRoutes";
 import googleRoutes from "./routes/gooleRoutes";
 import aiRoutes from "./routes/aiRoute";
-import { dbConnect } from "./database";
 import { swaggerDocs } from "./config/swagger";
+import { dbConnect } from "./database";
 import { logger } from "./Logger";
 import "./config/Passport";
 import "./utils/redisClient";
 
 class Server {
-  public app: express.Application;
+  private app: express.Application;
   private port: number;
-  private host: string = "127.0.0.1";
+  private host: string;
 
   constructor(port: number) {
     this.app = express();
     this.port = port;
-    this.middlewares();
-    this.routes();
-    this.errorHandler();
-    this.connectDB();
+    this.host = "0.0.0.0";
+
+    this.initializeMiddlewares();
+    this.initializeRoutes();
+    this.initializeSwagger();
+    this.initializeErrorHandling();
+    this.connectDatabaseAndStart();
   }
 
-  private middlewares(): void {
-    const allowedOrigin = ["http://localhost:5173"];
+  private initializeMiddlewares(): void {
+    const allowedOrigins = ["http://localhost:5173"];
     const corsOptions: CorsOptionsDelegate = async (
       req: CorsRequest,
       callback
     ) => {
       const origin = req.headers.origin;
-      if (!origin || allowedOrigin.includes(origin))
-        return callback(null, { credentials: true, origin: true });
-      else callback(new Error("Not Allowed By Cors"), { origin: false });
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, { credentials: true, origin: true });
+      } else {
+        callback(new Error("Not Allowed By Cors"), { origin: false });
+      }
     };
 
     this.app.use(cors(corsOptions));
-    passport.initialize();
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());
     this.app.use(
       morgan("combined", {
-        stream: { write: (msg) => logger.http(msg.trim()) },
+        stream: {
+          write: (message) => logger.http(message.trim()),
+        },
       })
     );
+    passport.initialize();
 
     this.app.get("/", (req: Request, res: Response) => {
-      res.send("<h1>This is a dockerized backend , Enjoyyy!</h1>");
+      res.send("<h1>This is a dockerized backend, Enjoyyy!</h1>");
     });
   }
 
-  private routes(): void {
+  private initializeRoutes(): void {
     this.app.use("/api/v1/auth", authRoutes);
     this.app.use("/api/v1/job", jobRoutes);
     this.app.use("/api/v1/rating", ratingRoutes);
@@ -68,7 +75,11 @@ class Server {
     this.app.use("/ai", aiRoutes);
   }
 
-  private errorHandler(): void {
+  private initializeSwagger(): void {
+    swaggerDocs(this.app, this.port);
+  }
+
+  private initializeErrorHandling(): void {
     this.app.use(
       (err: any, req: Request, res: Response, next: NextFunction) => {
         res.status(err.status || 500).json({
@@ -81,14 +92,15 @@ class Server {
     );
   }
 
-  private async connectDB(): Promise<void> {
+  private async connectDatabaseAndStart(): Promise<void> {
     try {
       await dbConnect();
-      this.app.listen(this.port, () => {
+      this.app.listen(this.port, this.host, () => {
         logger.info(`Server running on http://${this.host}:${this.port}`);
       });
-    } catch (error: any) {
-      logger.error("Error in DB Connection", error.message);
+    } catch (err: any) {
+      logger.error("Error in DB Connection", err.message);
+      process.exit(1);
     }
   }
 }
