@@ -12,6 +12,7 @@ import jobRoutes from "./routes/jobRoutes";
 import ratingRoutes from "./routes/ratingRoutes";
 import googleRoutes from "./routes/gooleRoutes";
 import aiRoutes from "./routes/aiRoute";
+import adminRoutes from './routes/adminRoutes'
 import { swaggerDocs } from "./config/swagger";
 import { dbConnect } from "./database";
 import { logger } from "./Logger";
@@ -73,6 +74,7 @@ class Server {
     this.app.use("/api/v1/rating", ratingRoutes);
     this.app.use("/api/v1/oauth", googleRoutes);
     this.app.use("/ai", aiRoutes);
+    this.app.use("/admin",adminRoutes)
   }
 
   private initializeSwagger(): void {

@@ -29,7 +29,9 @@ export class AuthController {
         path: "/"
       });
 
-      res.redirect("http://localhost:5173/oauth-success");
+      res.redirect(
+        `http://localhost:5173/oauth-success?accessToken=${accessToken}&refreshToken=${refreshToken}`
+      );
     }
   );
 }
