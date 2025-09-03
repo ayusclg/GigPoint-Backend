@@ -9,7 +9,7 @@ import { Application } from "../models/applicationModel";
 import path from "path";
 import fs from "fs";
 import { sendMail } from "../services/Nodemailer";
-import { isWorker } from "../utils/Rolecheck";
+import { isAdmin, isWorker } from "../utils/Rolecheck";
 import mongoose from "mongoose";
 
 export class JobController {
@@ -96,7 +96,7 @@ export class JobController {
       if (
         !isWorker(user) &&
         job.createdBy._id.toString() !== user._id?.toString()
-      )
+      && !isAdmin(user))
         throw new ApiError(403, "You cannot view");
       res
         .status(200)
@@ -110,11 +110,11 @@ export class JobController {
 
       const job = await Job.findById(jobId);
       if (!job) throw new ApiError(404, "Job Details Not Found");
-      if (job.createdBy.toString() !== req.userId)
+      if (job.createdBy.toString() !== req.userId )
         throw new ApiError(403, "You Cannot Delete");
 
       const user = await User.findById(req.userId);
-      if (!user) throw new ApiError(404, "User Not Found");
+      if (!user || !isAdmin(user)) throw new ApiError(404, "User Not Found Invalid Request");
 
       const removedId = user.jobPosted.filter(
         (id) => id.toString() !== jobId.toString()

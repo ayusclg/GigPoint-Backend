@@ -6,6 +6,7 @@ import { asyncHandler } from "../utils/AsyncHandler"
 import { Request,Response } from "express"
 import { isAdmin } from "../utils/Rolecheck";
 import { Job } from "../models/jobModel";
+import bcrypt from 'bcrypt'
 
 class adminController {
 
@@ -81,5 +82,6 @@ class adminController {
 
     })
     
+
 }
 export const admin = new adminController()
