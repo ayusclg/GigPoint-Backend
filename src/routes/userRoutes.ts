@@ -44,5 +44,6 @@ router.post("/uAddress", verifyUser, userController.addUserAddress);
 router.get("/workerReports", verifyUser, userController.workerReports);
 router.get("/recentWorkers", verifyUser, userController.myRecentWorkers);
 router.get("/myCompleted", verifyUser, userController.myCompletedJobs);
+router.post("/accessToken",verifyUser,userController.regenerateAccessToken)
 
 export default router;

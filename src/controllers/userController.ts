@@ -14,6 +14,7 @@ import { Job } from "../models/jobModel";
 import { Application } from "../models/applicationModel";
 import { logger } from "../Logger";
 import mongoose from "mongoose";
+import jwt, { JwtPayload } from 'jsonwebtoken'
 
 const welcomeEmailPath = path.join(
   __dirname,
@@ -462,6 +463,28 @@ class UserController {
         );
     }
   );
-}
+
+    regenerateAccessToken = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+      const token = req.headers.authorization?.startsWith("Bearer") ? req.headers.authorization.split(" ")[1] : req.cookies.refreshToken;
+      if (!token) {
+        throw new ApiError(404,"No Token Found")
+      }
+      try {
+        const verifyToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!) as JwtPayload
+        const decodeToken = await User.findById(verifyToken._id)
+        const newAccessToken = await decodeToken?.generateAccessToken()
+        res.cookie("accessToken", newAccessToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+          path:"/"
+        })
+        res.status(200).json(new ApiResponse(200,newAccessToken,"AccessToken Generated"))
+      } catch (error) {
+        throw new ApiError(500,"Invalid Token Request")
+      }
+    })
+  }
+
 
 export const userController = new UserController();
