@@ -2,6 +2,7 @@
 
 
 export const filterQuery = (filterJson: string): Record<string, any> => {
+    if (!filterJson || filterJson === "[]") return {};
     const filteredQuery = JSON.parse(filterJson)
     let query: Record<string, any> = {}
     for (const { field ,value} of filteredQuery)

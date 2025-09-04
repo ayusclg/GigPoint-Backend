@@ -82,6 +82,17 @@ class adminController {
 
     })
     
+    seeTotalTransaction = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+
+        const userCheck = await User.findById(req.userId)
+        if (!userCheck || !isAdmin(userCheck)) {
+            throw new ApiError(403, "Permission Denied")
+        }
+    
+    const filter = req.query.filter as string
+        
+        
+    })
 
 }
 export const admin = new adminController()
