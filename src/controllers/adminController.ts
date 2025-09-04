@@ -65,7 +65,7 @@ class adminController {
         const skip = (page - 1) * perPage
         const limit = perPage
         const query = filter ? filterQuery(filter) : {};
-        const allJobs = await Job.find(query).skip(skip).limit(limit).sort({ "createdAt": "asc" }).select("title description createdBy status assignedTo address createdAt ").lean()
+        const allJobs = await Job.find(query).skip(skip).limit(limit).sort({ "createdAt": "asc" }).select("title description createdBy status assignedTo address createdAt ").populate("createdBy","fullName profilePicture").lean()
         const totalJobs = await Job.countDocuments(query);
         if (totalJobs === 0) {
             throw new ApiError(404, "No Jobs In The Database")
