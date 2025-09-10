@@ -114,7 +114,7 @@ export class JobController {
         throw new ApiError(403, "You Cannot Delete");
 
       const user = await User.findById(req.userId);
-      if (!user || !isAdmin(user)) throw new ApiError(404, "User Not Found Invalid Request");
+      if (!user  ) throw new ApiError(404, "User Not Found Invalid Request");
 
       const removedId = user.jobPosted.filter(
         (id) => id.toString() !== jobId.toString()
@@ -122,6 +122,10 @@ export class JobController {
 
       user.jobPosted = removedId;
       await user.save();
+      const removeJob = await Job.findByIdAndDelete(job._id)
+      if (!removeJob) {
+        throw new ApiError(404,"Could Not Delete Job")
+      }
       res
         .status(200)
         .json(new ApiResponse(200, job.title, "job Deleted Successfully"));
