@@ -59,7 +59,7 @@ class adminController {
       }
 
       const userId = req.params.id;
-      const message = req.body;
+      const {message} = req.body;
 
       const removeUser = await User.findById(userId);
       if (!removeUser || isAdmin(removeUser)) {
@@ -139,7 +139,7 @@ class adminController {
     }
      
     const jobId = req.params.id;
-    const message = req.body;
+    const {message} = req.body;
 
     const findJob = await Job.findById(jobId).populate("createdBy", "fullName email")
     if (!findJob) {
