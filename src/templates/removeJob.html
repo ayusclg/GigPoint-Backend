@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Job Post Removal Notice - GigPoint</title>
+    <style>
+      body {
+        background-color: #f4f8ff;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        max-width: 600px;
+        margin: 30px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 70, 140, 0.1);
+        padding: 30px 20px;
+        color: #000000;
+      }
+      .header {
+        font-size: 24px;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #ff9800; /* orange tone for caution */
+        padding: 20px;
+        text-align: left;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+      }
+      .title {
+        font-size: 22px;
+        color: #ff9800;
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      .message {
+        font-size: 16px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .body-text {
+        background-color: #fff8e6;
+        border-left: 4px solid #ff9800;
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin: 15px 0;
+        font-size: 15px;
+        color: #444444;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 14px;
+        color: #999999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">GigPoint</div>
+
+      <div class="title">Hello {{username}},</div>
+
+      <div class="message">
+        <p>
+          We wanted to let you know that one of your job posts on GigPoint has been removed by our admin team.
+        </p>
+
+        <p>Reason provided:</p>
+
+        <div class="body-text">{{body}}</div>
+
+        <p>
+          If you feel this was a mistake or would like clarification, please
+          reach out to our support team at
+          <a href="mailto:support@gigpoint.com">support@gigpoint.com</a>.
+        </p>
+
+        <p>
+          You can always create a new job post that complies with our community
+          and posting guidelines.
+        </p>
+      </div>
+
+      <div class="footer">&copy; 2025 GigPoint. All rights reserved.</div>
+    </div>
+  </body>
+</html>
