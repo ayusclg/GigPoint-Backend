@@ -15,7 +15,7 @@ import fs from "fs";
 const removeUserHTML = path.join(__dirname, "../templates/removeUser.html");
 const removeUserTemplate = fs.readFileSync(removeUserHTML, "utf-8");
 
-const removeJobHTML = path.join(__dirname, "../templates/removeJob.html")
+const removeJobHTML = path.join(__dirname, "../templates/removeJob.html");
 const removeJobTemplate = fs.readFileSync(removeJobHTML, "utf-8");
 class adminController {
   viewAllUser = asyncHandler(
@@ -59,7 +59,7 @@ class adminController {
       }
 
       const userId = req.params.id;
-      const {message} = req.body;
+      const { message } = req.body;
 
       const removeUser = await User.findById(userId);
       if (!removeUser || isAdmin(removeUser)) {
@@ -132,52 +132,51 @@ class adminController {
     res.status(200).json(new ApiResponse(200, response, "Job List Fetched"));
   });
 
-  removeJob = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const userCheck = await User.findById(req.userId) 
-    if (!userCheck || !isAdmin(userCheck)) {
-      throw new ApiError(403,"Permission Denied")
-    }
-     
-    const jobId = req.params.id;
-    const {message} = req.body;
-
-    const findJob = await Job.findById(jobId).populate("createdBy", "fullName email")
-    if (!findJob) {
-      throw new ApiError(404,"Job Not Valid")
-    }
-    const email = (findJob.createdBy as any).email;
-    const name = (findJob.createdBy as any).fullName;
-    const html = removeJobTemplate.replace("{{username}}", name).replace("{{body}}", message || "Your job post was removed because it did not comply with GigPoint community guidelines and posting policies.")
-    const deleteJob = await Job.findByIdAndDelete(findJob._id)
-    if (deleteJob) {
-      const mailOptions = {
-        to: email,
-        subject: "Your Job Posting Has Been Removed",
-        message: "Your Job Posting Has Been Removed",
-        html,
-      };
-      const send = await sendMail(mailOptions)
-      if (!send) {
-        throw new ApiError(400,"Mail Sending Error")
-      }
-    }
-    else {
-      throw new ApiError(400,"Error In Deleting Post")
-    }
-
-    res.status(200).json(new ApiResponse(200,findJob,"Job Has Been Removed"))
-    
-    
-  })
-
-  seeTotalTransaction = asyncHandler(
+  removeJob = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
       const userCheck = await User.findById(req.userId);
       if (!userCheck || !isAdmin(userCheck)) {
         throw new ApiError(403, "Permission Denied");
       }
 
-      const filter = req.query.filter as string;
+      const jobId = req.params.id;
+      const { message } = req.body;
+
+      const findJob = await Job.findById(jobId).populate(
+        "createdBy",
+        "fullName email"
+      );
+      if (!findJob) {
+        throw new ApiError(404, "Job Not Valid");
+      }
+      const email = (findJob.createdBy as any).email;
+      const name = (findJob.createdBy as any).fullName;
+      const html = removeJobTemplate
+        .replace("{{username}}", name)
+        .replace(
+          "{{body}}",
+          message ||
+            "Your job post was removed because it did not comply with GigPoint community guidelines and posting policies."
+        );
+      const deleteJob = await Job.findByIdAndDelete(findJob._id);
+      if (deleteJob) {
+        const mailOptions = {
+          to: email,
+          subject: "Your Job Posting Has Been Removed",
+          message: "Your Job Posting Has Been Removed",
+          html,
+        };
+        const send = await sendMail(mailOptions);
+        if (!send) {
+          throw new ApiError(400, "Mail Sending Error");
+        }
+      } else {
+        throw new ApiError(400, "Error In Deleting Post");
+      }
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, findJob, "Job Has Been Removed"));
     }
   );
 
@@ -235,5 +234,43 @@ class adminController {
       .status(200)
       .json(new ApiResponse(200, response, "Dashboard Data Fetched"));
   });
+
+  topWorker = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const userCheck = await User.findById(req.userId);
+      if (!userCheck || !isAdmin(userCheck)) {
+        throw new ApiError(403, "Permission Denied");
+      }
+
+      const worker = await User.aggregate([
+        { $match: { role: "worker" } }, 
+        {
+          $addFields: {
+            jobsCount: { $size: "$jobDone" },
+          },
+        },
+        { $sort: { jobsCount: -1 } },
+        { $limit: 5 },
+        {
+          $project: {
+            _id: 1,
+            fullName: 1,
+            email: 1,
+            jobsCount: 1,
+            profilePicture: 1,
+            address:1,
+          },
+        },
+      ]);
+
+      if (!worker || worker.length === 0) {
+        throw new ApiError(404, "No Workers Found");
+      }
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, worker, "Top Workers Data Fetched "));
+    }
+  );
 }
 export const admin = new adminController();
