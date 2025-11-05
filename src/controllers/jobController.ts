@@ -80,7 +80,7 @@ export class JobController {
         .json(new ApiResponse(201, createdJob, "Job Created Successfully"));
     }
   );
-
+ 
   public getJobById = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
       const user = await User.findById(req.userId);
