@@ -107,13 +107,13 @@ class UserController {
         httpOnly: true,
         secure: true,
         sameSite: "none",
-        path: "./api",
+        path: "/api",
       });
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: "none",
-        path: "./api",
+        path: "/api",
       });
 
       res
