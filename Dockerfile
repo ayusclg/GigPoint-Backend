@@ -14,4 +14,4 @@ RUN cp -r src/templates dist/templates
 
 EXPOSE 3000
 
-CMD ["pm2-runtime", "ecosystem.config."]
+CMD ["pm2-runtime", "ecosystem.config.js"]
