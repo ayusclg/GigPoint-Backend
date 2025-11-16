@@ -1,13 +1,16 @@
 module.exports = {
-  apps: [
-    {
-      name: "mybackend", // App name
-      script: ".dist/index.js", // Entry point
-      watch:false,
-      env: {
-        NODE_ENV: "development",
-          PORT: 3000,
-      },
-    },
-  ],
-};
+    app: [
+        {
+            name: "gigpoint",
+            script: "dist/index.js",
+            args: "",
+            watch: false,
+            instances: 1,
+            exec_mode: "fork",
+            autorestart:true,
+            restart_delay: 5000,
+            min_uptime: "60s",
+            max_restarts: 10,
+        }
+    ]
+}

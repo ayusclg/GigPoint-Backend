@@ -11,6 +11,7 @@ import { Admin } from "mongodb";
 import { sendMail } from "../services/Nodemailer";
 import path from "path";
 import fs from "fs";
+import { bubbleSortArray } from "../Algorithms/BubbleSort";
 
 const removeUserHTML = path.join(__dirname, "../templates/removeUser.html");
 const removeUserTemplate = fs.readFileSync(removeUserHTML, "utf-8");
@@ -243,13 +244,12 @@ class adminController {
       }
 
       const worker = await User.aggregate([
-        { $match: { role: "worker" } }, 
+        { $match: { role: "worker" } },
         {
           $addFields: {
             jobsCount: { $size: "$jobDone" },
           },
         },
-        { $sort: { jobsCount: -1 } },
         { $limit: 5 },
         {
           $project: {
@@ -258,7 +258,7 @@ class adminController {
             email: 1,
             jobsCount: 1,
             profilePicture: 1,
-            address:1,
+            address: 1,
           },
         },
       ]);
@@ -267,44 +267,53 @@ class adminController {
         throw new ApiError(404, "No Workers Found");
       }
 
+      const sortedWorkers =bubbleSortArray(worker, "jobsCount", "desc").slice(
+        0,
+        5
+      );
+
       res
         .status(200)
-        .json(new ApiResponse(200, worker, "Top Workers Data Fetched "));
+        .json(new ApiResponse(200, sortedWorkers, "Top Workers Data Fetched"));
     }
   );
 
-  topCustomers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const userCheck = await User.findById(req.userId)
-    if (!userCheck || !isAdmin(userCheck)) {
-      throw new ApiError(403,"Permission Denied")
-    }
+  topCustomers = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const userCheck = await User.findById(req.userId);
+      if (!userCheck || !isAdmin(userCheck)) {
+        throw new ApiError(403, "Permission Denied");
+      }
 
-    const customers = await User.aggregate([
-      { $match: { role: "user" } },
-      {
-        $addFields: {
-          postCount: { $size: "$jobPosted" },
+      const customers = await User.aggregate([
+        { $match: { role: "user" } },
+        {
+          $addFields: {
+            postCount: { $size: "$jobPosted" },
+          },
         },
-      },
-      { $sort: { postCount: -1 } },
-      { $limit: 5 },
-      {
-        $project: {
-          _id: 1,
-          fullName: 1,
-          email: 1,
-          jobPosted: 1,
-          profilePicture: 1,
-          address: 1,
+        { $sort: { postCount: -1 } },
+        { $limit: 5 },
+        {
+          $project: {
+            _id: 1,
+            fullName: 1,
+            email: 1,
+            jobPosted: 1,
+            profilePicture: 1,
+            address: 1,
+          },
         },
-      },
-    ]);
+      ]);
 
-    if (!customers || customers.length === 0) {
-      throw new ApiError(404,"No Any Customers Found")
+      if (!customers || customers.length === 0) {
+        throw new ApiError(404, "No Any Customers Found");
+      }
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, customers, "Top Customers Fetched"));
     }
-
-    res.status(200).json(new ApiResponse(200,customers,"Top Customers Fetched"))
-  })
+  );
 }
 export const admin = new adminController();
