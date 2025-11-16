@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json .
 
 RUN npm install 
-
+RUN npm install pm2 -g
 
 COPY . .
 RUN npm run build
@@ -14,4 +14,4 @@ RUN cp -r src/templates dist/templates
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["pm2-runtime", "ecosystem.config."]
