@@ -1,5 +1,5 @@
 module.exports = {
-    app: [
+    apps: [
         {
             name: "gigpoint",
             script: "dist/index.js",
