@@ -107,13 +107,13 @@ class UserController {
         httpOnly: true,
         secure: true,
         sameSite: "none",
-        path: "/api",
+        path: "/",
       });
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: "none",
-        path: "/api",
+        path: "/",
       });
 
       res
@@ -134,13 +134,13 @@ class UserController {
         httpOnly: true,
         secure: true,
         sameSite: "none",
-        path: "./api",
+        path: "/",
       });
       res.clearCookie("accessToken", {
         httpOnly: true,
         secure: true,
         sameSite: "none",
-        path: "./api",
+        path: "/",
       });
       res.status(200).json(new ApiResponse(200, "", "User logged Out"));
     }
