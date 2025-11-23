@@ -92,7 +92,7 @@ class UserController {
       const userExist = await User.findOne({ email });
       if (!userExist?.password) throw new ApiError(401, "Please Register");
 
-      const checkPW = compareHash(password);
+      const checkPW = compareHash(password,userExist.password);
       if (!checkPW)
         throw new ApiError(403, "Permission Denied (Incorrect Password)");
 
