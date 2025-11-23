@@ -11,7 +11,7 @@ interface Imail {
 const providerEmail =process.env.EMAIL_USER
 const transport = nodemailer.createTransport({
   host: "rabbitstudio.com.np",
-  port: 587,
+  port: 465,
   secure: false,
   auth: {
     user: providerEmail,
