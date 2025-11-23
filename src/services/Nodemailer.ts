@@ -10,14 +10,14 @@ interface Imail {
 
 const providerEmail =process.env.EMAIL_USER
 const transport = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-        user:providerEmail,
-        pass:process.env.EMAIL_PASS
-    }
-})
+  host: "rabbitstudio.com.np",
+  port: 587,
+  secure: false,
+  auth: {
+    user: providerEmail,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 export const sendMail = async ({ to, subject, html, message }: Imail) => {
 

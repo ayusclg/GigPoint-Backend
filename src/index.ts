@@ -12,7 +12,7 @@ import jobRoutes from "./routes/jobRoutes";
 import ratingRoutes from "./routes/ratingRoutes";
 import googleRoutes from "./routes/gooleRoutes";
 import aiRoutes from "./routes/aiRoute";
-import adminRoutes from './routes/adminRoutes'
+import adminRoutes from "./routes/adminRoutes";
 import { swaggerDocs } from "./config/swagger";
 import { dbConnect } from "./database";
 import { logger } from "./Logger";
@@ -22,12 +22,10 @@ import "./utils/redisClient";
 class Server {
   private app: Express;
   private port: number;
-  private host: string;
 
   constructor(port: number) {
     this.app = express();
     this.port = port;
-    this.host = "0.0.0.0";
 
     this.initializeMiddlewares();
     this.initializeRoutes();
@@ -74,7 +72,7 @@ class Server {
     this.app.use("/api/v1/rating", ratingRoutes);
     this.app.use("/api/v1/oauth", googleRoutes);
     this.app.use("/ai", aiRoutes);
-    this.app.use("/admin",adminRoutes)
+    this.app.use("/admin", adminRoutes);
   }
 
   private initializeSwagger(): void {
@@ -97,8 +95,8 @@ class Server {
   private async connectDatabaseAndStart(): Promise<void> {
     try {
       await dbConnect();
-      this.app.listen(this.port, this.host, () => {
-        logger.info(`Server running on http://${this.host}:${this.port}`);
+      this.app.listen(this.port, () => {
+        logger.info(`Server running on http://localhost:${this.port}`);
       });
     } catch (err: any) {
       logger.error("Error in DB Connection", err.message);
