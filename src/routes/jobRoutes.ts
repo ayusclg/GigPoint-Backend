@@ -4,6 +4,7 @@ import { verifyUser } from "../middlewares/auth";
 import { Upload } from "../middlewares/UploadImage";
 import { JobController } from "../controllers/jobController";
 import { validateJobPost } from "../middlewares/validation";
+import { limitJobApplications, limitJobPosts } from "../Algorithms/limiting";
 
 const router = express.Router();
 const jobController = new JobController();
@@ -11,6 +12,7 @@ const jobController = new JobController();
 router.post(
   "/user/create",
   verifyUser,
+  limitJobPosts,
   Upload.array("image"),
   validateJobPost,
   jobController.createJob
@@ -18,7 +20,12 @@ router.post(
 router.get("/user/get/jobs", verifyUser, jobController.getMyJobs);
 router.get("/get/:id", verifyUser, jobController.getJobById);
 router.delete("/user/delete/:id", verifyUser, jobController.deleteJob);
-router.post("/worker/apply/:id", verifyUser, jobController.applyJob);
+router.post(
+  "/worker/apply/:id",
+  verifyUser,
+  limitJobApplications,
+  jobController.applyJob
+);
 router.post(
   "/user/approve/:id",
   verifyUser,
