@@ -23,7 +23,6 @@ export class JobController {
     const approveEmail = path.join(__dirname, "../templates/jobApprove.html");
     this.approveTemplate = fs.readFileSync(approveEmail, "utf-8");
 
-
     Object.getOwnPropertyNames(Object.getPrototypeOf(this))
       .filter(
         (prop) =>
@@ -80,7 +79,7 @@ export class JobController {
         .json(new ApiResponse(201, createdJob, "Job Created Successfully"));
     }
   );
- 
+
   public getJobById = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
       const user = await User.findById(req.userId);
@@ -95,8 +94,9 @@ export class JobController {
       if (!job) throw new ApiError(404, "Job Not Found");
       if (
         !isWorker(user) &&
-        job.createdBy._id.toString() !== user._id?.toString()
-      && !isAdmin(user))
+        job.createdBy._id.toString() !== user._id?.toString() &&
+        !isAdmin(user)
+      )
         throw new ApiError(403, "You cannot view");
       res
         .status(200)
@@ -110,11 +110,11 @@ export class JobController {
 
       const job = await Job.findById(jobId);
       if (!job) throw new ApiError(404, "Job Details Not Found");
-      if (job.createdBy.toString() !== req.userId )
+      if (job.createdBy.toString() !== req.userId)
         throw new ApiError(403, "You Cannot Delete");
 
       const user = await User.findById(req.userId);
-      if (!user  ) throw new ApiError(404, "User Not Found Invalid Request");
+      if (!user) throw new ApiError(404, "User Not Found Invalid Request");
 
       const removedId = user.jobPosted.filter(
         (id) => id.toString() !== jobId.toString()
@@ -122,9 +122,9 @@ export class JobController {
 
       user.jobPosted = removedId;
       await user.save();
-      const removeJob = await Job.findByIdAndDelete(job._id)
+      const removeJob = await Job.findByIdAndDelete(job._id);
       if (!removeJob) {
-        throw new ApiError(404,"Could Not Delete Job")
+        throw new ApiError(404, "Could Not Delete Job");
       }
       res
         .status(200)
@@ -455,7 +455,7 @@ export class JobController {
         address: userAddress,
         role: "worker",
       }).select(
-        "-password -jobDone -jobApplied -jobPosted -gender -email -resetOtp -resetOtpExpiry -experienceYear -isAvailable -phoneNo -createdAt -updatedAt"
+        "-password -jobDone -jobApplied -jobPosted -gender  -resetOtp -resetOtpExpiry"
       );
       if (!findWorker) {
         throw new ApiError(404, "No Workers Found");
@@ -471,5 +471,4 @@ export class JobController {
         );
     }
   );
-
 }

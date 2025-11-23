@@ -72,7 +72,7 @@ class Server {
     this.app.use("/api/v1/rating", ratingRoutes);
     this.app.use("/api/v1/oauth", googleRoutes);
     this.app.use("/ai", aiRoutes);
-    this.app.use("/admin", adminRoutes);
+    this.app.use("/api/v1/admin", adminRoutes);
   }
 
   private initializeSwagger(): void {

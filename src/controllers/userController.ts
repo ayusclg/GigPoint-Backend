@@ -275,7 +275,7 @@ class UserController {
 
       const result = await User.find(query)
         .select(
-          "-password -refreshToken -email -phoneNo -jobPosted -jobDone -experienceYear -isAvailable -jobApplied"
+          "-password -refreshToken -jobPosted -jobDone -jobApplied"
         )
         .sort({ [sortOption]: 1 })
         .skip((page - 1) * perPage)
